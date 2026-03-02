@@ -21,9 +21,8 @@ Next.js 14 App Router を使用したフルスタック構成。
 ```typescript
 // ユーザー
 interface User {
-  id: string;
-  email: string;
-  name: string;
+  sub: string;            // OIDCトークンのsubject（個人情報を持たない）
+  nickname: string;
   avatarUrl?: string;
   createdAt: string;
 }
@@ -39,7 +38,7 @@ interface Band {
 }
 
 interface BandMember {
-  userId: string;
+  userSub: string;        // User.sub への参照
   user: User;
   role: 'leader' | 'member';
   joinedAt: string;
@@ -55,7 +54,7 @@ interface LiveEvent {
   bands: Band[];
   milestones: Milestone[];
   status: 'planning' | 'confirmed' | 'completed' | 'cancelled';
-  createdBy: string;      // userId
+  createdBy: string;      // User.sub
   createdAt: string;
   updatedAt: string;
 }
