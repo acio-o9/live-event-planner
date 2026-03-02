@@ -51,12 +51,31 @@ interface LiveEvent {
   description?: string;
   date?: string;          // 開催予定日（未定の場合はnull）
   venue?: string;
-  bands: Band[];
+  photoAlbumUrl?: string; // Google フォトアルバムURL
+  bands: LiveEventBand[]; // Band[] から変更（スナップショット付き中間エンティティ）
   milestones: Milestone[];
   status: 'planning' | 'confirmed' | 'completed' | 'cancelled';
   createdBy: string;      // User.sub
   createdAt: string;
   updatedAt: string;
+}
+
+// ライブ×バンドの参加記録（中間エンティティ）
+interface LiveEventBand {
+  id: string;
+  liveEventId: string;
+  bandId: string;
+  band: Band;                      // 現在のバンド情報（表示用参照）
+  memberSnapshot: MemberSnapshot[]; // 参加確定時点のメンバースナップショット
+  setlist: Setlist;
+  snapshotTakenAt?: string;        // スナップショット取得日時（未確定の場合はnull）
+}
+
+// メンバースナップショット（参加確定時点の記録）
+interface MemberSnapshot {
+  userSub: string;
+  nickname: string;                // 当時の表示名も保存
+  role: 'leader' | 'member';
 }
 
 // マイルストーン
@@ -69,11 +88,10 @@ interface Milestone {
   order: number;
 }
 
-// セットリスト
+// セットリスト（LiveEventBand に紐付く）
 interface Setlist {
   id: string;
-  liveEventId: string;
-  bandId: string;
+  liveEventBandId: string; // LiveEventBand.id への参照（liveEventId + bandId から変更）
   songs: SetlistSong[];
   updatedAt: string;
 }
@@ -108,7 +126,7 @@ interface SetlistSong {
 | GET | /api/bands/:id | バンド詳細 |
 | PUT | /api/bands/:id | バンド更新 |
 | POST | /api/bands/:id/members | メンバー追加 |
-| DELETE | /api/bands/:id/members/:userId | メンバー削除 |
+| DELETE | /api/bands/:id/members/:userSub | メンバー削除 |
 
 ### ライブイベント
 | Method | Path | 説明 |
@@ -120,11 +138,18 @@ interface SetlistSong {
 | GET | /api/live-events/:id/milestones | マイルストーン一覧 |
 | PUT | /api/live-events/:id/milestones/:milestoneId | マイルストーン更新 |
 
+### ライブ×バンド参加管理
+| Method | Path | 説明 |
+|--------|------|------|
+| POST | /api/live-events/:id/bands | バンド参加追加 |
+| DELETE | /api/live-events/:id/bands/:liveEventBandId | バンド参加取り消し |
+| POST | /api/live-events/:id/bands/:liveEventBandId/snapshot | メンバースナップショット確定 |
+
 ### セットリスト
 | Method | Path | 説明 |
 |--------|------|------|
-| GET | /api/live-events/:id/bands/:bandId/setlist | セットリスト取得 |
-| PUT | /api/live-events/:id/bands/:bandId/setlist | セットリスト更新 |
+| GET | /api/live-events/:id/bands/:liveEventBandId/setlist | セットリスト取得 |
+| PUT | /api/live-events/:id/bands/:liveEventBandId/setlist | セットリスト更新 |
 
 ### マイルストーン自動生成ロジック
 
@@ -229,3 +254,20 @@ type Permission =
 - 初期ページ表示: 3秒以内
 - Next.js の SSR/SSG を適切に活用
 - 一覧ページはページネーション対応（20件/ページ）
+
+## Key Decisions（設計判断の記録）
+
+### LiveEventBand スナップショットパターン（2026-03-02）
+
+**課題**: バンドはライブをまたいで存在し続けるが、メンバーは変更される。ライブ開催時点の参加メンバーを記録したい。
+
+**選択肢**:
+- A) `LiveEventBand` 中間エンティティ + `MemberSnapshot`（採用）
+- B) バンドのバージョニング
+- C) スナップショットなし
+
+**決定**: Option A を採用。
+- `LiveEventBand` でライブとバンドの参加関係を管理
+- `MemberSnapshot` で参加確定時点のメンバー情報（`userSub`, `nickname`, `role`）を保存
+- `snapshotTakenAt` が null の間はスナップショット未確定（メンバー変更可能）
+- セットリストは `liveEventBandId` に紐付き、ライブ×バンド単位で管理
