@@ -2,9 +2,11 @@
 
 import { useAuth } from "@/hooks/useAuth";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { useRouter } from "next/navigation";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading, signIn } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
 
   if (isLoading) {
     return (
@@ -20,10 +22,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         <h1 className="text-2xl font-bold text-gray-900">ログインが必要です</h1>
         <p className="text-gray-600">Live Event Planner を使用するにはログインしてください。</p>
         <button
-          onClick={signIn}
+          onClick={() => router.push("/auth/signin")}
           className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-medium"
         >
-          Google でログイン
+          ログインする
         </button>
       </div>
     );

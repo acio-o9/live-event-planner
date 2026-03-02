@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
 
 export function Header() {
-  const { user, isAuthenticated, signIn, signOut } = useAuth();
+  const { user, isAuthenticated, signOut } = useAuth();
+  const router = useRouter();
 
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
@@ -24,10 +26,10 @@ export function Header() {
           </>
         ) : (
           <button
-            onClick={signIn}
+            onClick={() => router.push("/auth/signin")}
             className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
-            Google でログイン
+            ログイン
           </button>
         )}
       </div>
