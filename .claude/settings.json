@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc --noEmit)",
+      "Bash(npx jest --ci --passWithNoTests)",
+      "Bash(npm install --save-dev ts-node)"
+    ]
+  }
+}
