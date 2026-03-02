@@ -19,19 +19,19 @@
 
 \`\`\`bash
 # 設計書作成
-/design-docs:plan   # 対話形式で詳細設計（requirements/design/tasks）
-/design-docs:quick  # gitコミット形式の2分設計
+/design-docs-plan   # 対話形式で詳細設計（requirements/design/tasks）
+/design-docs-quick  # gitコミット形式の2分設計
 
 # 実装・進捗管理
-/design-docs:start  # カレント設計書から実装開始
-/design-docs:track  # タスク進捗管理・Development Log記録
-/design-docs:switch # 設計書の切り替え
+/design-docs-start  # カレント設計書から実装開始
+/design-docs-track  # タスク進捗管理・Development Log記録
+/design-docs-switch # 設計書の切り替え
 \`\`\`
 
 ## カレント設計書管理
 
 - \`.claude/.current-design-doc\` で作業中の設計書を自動管理
-- \`/design-docs:start\` と \`/design-docs:track\` は引数不要
+- \`/design-docs-start\` と \`/design-docs-track\` は引数不要
 - 設計書は \`docs/design_docs/\` に保存
 
 ## 使用方法
@@ -42,7 +42,7 @@
 
 \`\`\`bash
 # ステップ1: 設計書作成
-/design-docs:plan
+/design-docs-plan
 
 # 対話形式で以下を入力:
 # - What（何を作るか）
@@ -56,10 +56,10 @@
 # - 権限制御
 
 # ステップ2: 実装開始
-/design-docs:start
+/design-docs-start
 
 # ステップ3: 進捗管理
-/design-docs:track
+/design-docs-track
 \`\`\`
 
 **生成される設計書:**
@@ -76,7 +76,7 @@ docs/design_docs/YYYYMMDD-feature-name/
 
 \`\`\`bash
 # ステップ1: クイック設計（2分）
-/design-docs:quick
+/design-docs-quick
 
 # 以下を一括入力:
 # - Plan（一行要約）
@@ -86,7 +86,7 @@ docs/design_docs/YYYYMMDD-feature-name/
 # - Tests（テスト）
 
 # ステップ2: 実装開始
-/design-docs:start
+/design-docs-start
 
 # ステップ3: 実装完了後、コミット更新
 git add .
@@ -105,7 +105,7 @@ git commit --amend -m "feat: [機能名]
 複数の機能を並行開発する場合
 
 \`\`\`bash
-/design-docs:switch
+/design-docs-switch
 
 # 利用可能な設計書一覧から選択
 \`\`\`
@@ -253,6 +253,6 @@ CLAUDE.mdの「標準UIパターン」に従う:
 - **知識の蓄積** - 開発ログで経験を記録・共有
 
 **次のステップ:**
-1. \`/design-docs:plan\` で設計書を作成
-2. \`/design-docs:start\` で実装開始
-3. \`/design-docs:track\` で進捗管理
+1. \`/design-docs-plan\` で設計書を作成
+2. \`/design-docs-start\` で実装開始
+3. \`/design-docs-track\` で進捗管理

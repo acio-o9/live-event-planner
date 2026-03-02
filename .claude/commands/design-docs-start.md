@@ -11,9 +11,9 @@
    カレント設計書が設定されていません
 
    以下のいずれかを実行してください:
-   - \`/design-docs:plan\` で新規設計書を作成
-   - \`/design-docs:quick\` でクイック設計を作成
-   - \`/design-docs:switch\` で既存の設計書を選択
+   - \`/design-docs-plan\` で新規設計書を作成
+   - \`/design-docs-quick\` でクイック設計を作成
+   - \`/design-docs-switch\` で既存の設計書を選択
    \`\`\`
 
 2. **gitコミット方式の場合** (\`git:[hash]\` 形式):
@@ -208,7 +208,7 @@ CLAUDE.md準拠:
 2. Phase順に実装（Types → API → Hooks → Components → Permissions → Testing）
 3. 各Phase完了後、TodoWriteでタスクをcompletedに更新
 4. 実装完了後、\`npm test -- [feature-name]\` を実行
-5. \`/design-docs:track\` で進捗を記録
+5. \`/design-docs-track\` で進捗を記録
 
 それでは実装を開始してください。
 \`\`\`
@@ -259,7 +259,7 @@ CLAUDE.md準拠:
 
 進捗管理:
 - TodoWrite toolでタスクを管理します
-- 実装完了後は \`/design-docs:track\` で進捗を記録してください
+- 実装完了後は \`/design-docs-track\` で進捗を記録してください
 \`\`\`
 
 **gitコミット方式の場合:**
@@ -288,6 +288,6 @@ git commit --amend -m "feat: [機能名]
 3. **CLAUDE.md準拠**: 必ず既存のデザインシステムに従う
 4. **権限制御必須**: 新しいページ/機能には必ず権限制御を実装
 5. **テスト駆動**: テストを書いてから実装
-6. **進捗記録**: 各Phase完了後に \`/design-docs:track\` で記録
+6. **進捗記録**: 各Phase完了後に \`/design-docs-track\` で記録
 7. **gitコミット方式対応**: \`git:\` プレフィックスで判別し、git show コマンドで読み込み
 8. **フィーチャー特化テスト**: \`npm test -- [feature-name]\` で特定機能のみテスト実行

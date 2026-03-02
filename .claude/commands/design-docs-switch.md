@@ -15,8 +15,8 @@ ls -1d docs/design_docs/20*/ 2>/dev/null || echo "設計書が見つかりませ
 設計書が見つかりません
 
 以下のいずれかを実行してください:
-- \`/design-docs:plan\` で新規設計書を作成
-- \`/design-docs:quick\` でクイック設計を作成
+- \`/design-docs-plan\` で新規設計書を作成
+- \`/design-docs-quick\` でクイック設計を作成
 \`\`\`
 
 ## ステップ2: 設計書の詳細情報表示
@@ -78,8 +78,8 @@ AskUserQuestion toolで選択を促す:
      └── tasks.md
 
    次のステップ:
-   - \`/design-docs:start\` で実装開始
-   - \`/design-docs:track\` で進捗確認
+   - \`/design-docs-start\` で実装開始
+   - \`/design-docs-track\` で進捗確認
    \`\`\`
 
 ## ステップ5: 進捗状況の簡易表示（オプション）

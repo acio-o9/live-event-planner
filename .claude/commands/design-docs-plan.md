@@ -326,9 +326,9 @@ docs/design_docs/YYYYMMDD-feature-name/
    (.claude/.current-design-doc)
 
 次のステップ:
-- \`/design-docs:start\` で実装開始（引数不要）
-- \`/design-docs:track\` でタスク管理（引数不要）
-- \`/design-docs:switch\` で別の設計書に切り替え
+- \`/design-docs-start\` で実装開始（引数不要）
+- \`/design-docs-track\` でタスク管理（引数不要）
+- \`/design-docs-switch\` で別の設計書に切り替え
 
 または、直接実装を開始する場合:
 「設計書に従って実装してください」
