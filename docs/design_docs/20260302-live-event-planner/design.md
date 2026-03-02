@@ -86,6 +86,18 @@ interface Milestone {
   dueDate?: string;       // 開催予定日が未定の場合はnull
   status: 'pending' | 'in_progress' | 'completed';
   order: number;
+  tasks: Task[];
+}
+
+// タスク（マイルストーンに紐付く作業単位）
+interface Task {
+  id: string;
+  milestoneId: string;
+  liveEventBandId?: string; // nullならライブ全体タスク、あればバンド個別タスク
+  title: string;
+  assigneeUserSub?: string; // 担当者（User.sub）。未アサインも可
+  status: 'pending' | 'in_progress' | 'completed';
+  order: number;
 }
 
 // セットリスト（LiveEventBand に紐付く）
@@ -141,9 +153,17 @@ interface SetlistSong {
 ### ライブ×バンド参加管理
 | Method | Path | 説明 |
 |--------|------|------|
-| POST | /api/live-events/:id/bands | バンド参加追加 |
+| POST | /api/live-events/:id/bands | バンド参加追加（バンド別タスクを自動生成） |
 | DELETE | /api/live-events/:id/bands/:liveEventBandId | バンド参加取り消し |
 | POST | /api/live-events/:id/bands/:liveEventBandId/snapshot | メンバースナップショット確定 |
+
+### タスク
+| Method | Path | 説明 |
+|--------|------|------|
+| GET | /api/live-events/:id/milestones/:milestoneId/tasks | タスク一覧（?liveEventBandId= でバンド絞り込み可） |
+| POST | /api/live-events/:id/milestones/:milestoneId/tasks | タスク追加 |
+| PUT | /api/live-events/:id/milestones/:milestoneId/tasks/:taskId | タスク更新（担当者・ステータス変更） |
+| DELETE | /api/live-events/:id/milestones/:milestoneId/tasks/:taskId | タスク削除 |
 
 ### セットリスト
 | Method | Path | 説明 |
@@ -151,18 +171,27 @@ interface SetlistSong {
 | GET | /api/live-events/:id/bands/:liveEventBandId/setlist | セットリスト取得 |
 | PUT | /api/live-events/:id/bands/:liveEventBandId/setlist | セットリスト更新 |
 
-### マイルストーン自動生成ロジック
+### マイルストーン・タスク自動生成ロジック
 
-ライブ作成時（`POST /api/live-events`）に開催予定日が指定されている場合は逆算して以下を自動生成。開催予定日が未定の場合はマイルストーンの期限を空欄で生成し、日程確定後に一括更新できるようにする:
+**ライブ作成時**（`POST /api/live-events`）にマイルストーンとライブ全体タスクを自動生成する。開催予定日が指定されている場合は逆算して期限を設定し、未定の場合は期限を空欄で生成して日程確定後に一括更新できるようにする:
 
-| マイルストーン | 期限（開催日からの逆算） |
-|--------------|----------------------|
-| バンド参加申し込み締め切り | -60日 |
-| セットリスト提出締め切り | -30日 |
-| リハーサル日程確定 | -21日 |
-| 会場・機材確認 | -14日 |
-| 最終リハーサル | -7日 |
-| 当日準備・リハーサル | 0日 |
+| マイルストーン | 期限（開催日からの逆算） | ライブ全体タスク（例） |
+|--------------|----------------------|----------------------|
+| バンド参加申し込み締め切り | -60日 | 告知用サイト作成 |
+| セットリスト提出締め切り | -30日 | ライブTシャツ手配 |
+| リハーサル日程確定 | -21日 | — |
+| 会場・機材確認 | -14日 | 会場・機材確認連絡 |
+| 最終リハーサル | -7日 | — |
+| 当日準備・リハーサル | 0日 | 打ち上げ用デリバリー手配 |
+
+**バンド参加時**（`POST /api/live-events/:id/bands`）にバンド個別タスクを自動生成する:
+
+| 紐付けマイルストーン | バンド個別タスク（例） |
+|--------------------|----------------------|
+| セットリスト提出締め切り | PA表提出 |
+| 最終リハーサル | セットリスト最終確認 |
+
+テンプレートはコードで定義（DBには持たない）。生成後はUIから追加・編集・削除が可能。
 
 ## Page / Component Structure（ページ・コンポーネント構成）
 
@@ -271,3 +300,15 @@ type Permission =
 - `MemberSnapshot` で参加確定時点のメンバー情報（`userSub`, `nickname`, `role`）を保存
 - `snapshotTakenAt` が null の間はスナップショット未確定（メンバー変更可能）
 - セットリストは `liveEventBandId` に紐付き、ライブ×バンド単位で管理
+
+### タスク設計（2026-03-02）
+
+**課題**: マイルストーンごとに具体的な作業（告知サイト作成、PA表提出など）を管理したい。ライブ全体の作業とバンドごとの作業が混在する。
+
+**決定**:
+- `Task` を `Milestone` 配下のエンティティとして定義
+- `liveEventBandId` の有無でスコープを判別（null = ライブ全体、あり = バンド個別）
+- 担当者（`assigneeUserSub`）をアサイン可能にしてタスクの偏りを防ぐ
+- デフォルトタスクはコード定義のテンプレートから自動生成（DBには持たない）
+- ライブ全体タスク: ライブ作成時に生成
+- バンド個別タスク: バンド参加時（`LiveEventBand` 作成時）に生成
