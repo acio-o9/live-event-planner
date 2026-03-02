@@ -49,7 +49,7 @@ interface LiveEvent {
   id: string;
   title: string;
   description?: string;
-  date: string;           // 開催日
+  date?: string;          // 開催予定日（未定の場合はnull）
   venue?: string;
   bands: Band[];
   milestones: Milestone[];
@@ -64,7 +64,7 @@ interface Milestone {
   id: string;
   liveEventId: string;
   title: string;
-  dueDate: string;
+  dueDate?: string;       // 開催予定日が未定の場合はnull
   status: 'pending' | 'in_progress' | 'completed';
   order: number;
 }
@@ -128,7 +128,7 @@ interface SetlistSong {
 
 ### マイルストーン自動生成ロジック
 
-ライブ作成時（`POST /api/live-events`）に開催日から逆算して以下を自動生成:
+ライブ作成時（`POST /api/live-events`）に開催予定日が指定されている場合は逆算して以下を自動生成。開催予定日が未定の場合はマイルストーンの期限を空欄で生成し、日程確定後に一括更新できるようにする:
 
 | マイルストーン | 期限（開催日からの逆算） |
 |--------------|----------------------|
