@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -1d docs/design_docs/20*/)",
+      "Bash(git config user.name)"
+    ]
+  }
+}
