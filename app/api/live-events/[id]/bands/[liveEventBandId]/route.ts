@@ -1,5 +1,5 @@
 import { requireSession } from "@/lib/api/session";
-import { liveEvents } from "@/lib/store";
+import { prisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
 
 export async function DELETE(
@@ -9,30 +9,16 @@ export async function DELETE(
   const { error } = await requireSession();
   if (error) return error;
 
-  const event = liveEvents.get(params.id);
-  if (!event) return Response.json({ error: "Not Found" }, { status: 404 });
-
-  const bandParticipation = event.bands.find(
-    (b) => b.id === params.liveEventBandId
-  );
-  if (!bandParticipation) {
+  const leb = await prisma.liveEventBand.findUnique({
+    where: { id: params.liveEventBandId },
+    select: { id: true, liveEventId: true },
+  });
+  if (!leb || leb.liveEventId !== params.id) {
     return Response.json({ error: "Band participation not found" }, { status: 404 });
   }
 
-  // バンド個別タスクも合わせて削除
-  const updatedMilestones = event.milestones.map((m) => ({
-    ...m,
-    tasks: m.tasks.filter(
-      (t) => t.liveEventBandId !== params.liveEventBandId
-    ),
-  }));
-
-  liveEvents.set(params.id, {
-    ...event,
-    bands: event.bands.filter((b) => b.id !== params.liveEventBandId),
-    milestones: updatedMilestones,
-    updatedAt: new Date().toISOString(),
-  });
+  // onDelete: Cascade handles tasks and setlist automatically
+  await prisma.liveEventBand.delete({ where: { id: params.liveEventBandId } });
 
   return new Response(null, { status: 204 });
 }

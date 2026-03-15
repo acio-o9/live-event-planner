@@ -1,5 +1,6 @@
 import { requireSession } from "@/lib/api/session";
-import { liveEvents } from "@/lib/store";
+import { prisma } from "@/lib/prisma";
+import { serializeSetlist } from "@/lib/db/serializers";
 import { UpdateSetlistRequest } from "@/lib/types";
 import { NextRequest } from "next/server";
 
@@ -10,17 +11,21 @@ export async function GET(
   const { error } = await requireSession();
   if (error) return error;
 
-  const event = liveEvents.get(params.id);
-  if (!event) return Response.json({ error: "Not Found" }, { status: 404 });
-
-  const liveEventBand = event.bands.find(
-    (b) => b.id === params.liveEventBandId
-  );
-  if (!liveEventBand) {
+  const leb = await prisma.liveEventBand.findUnique({
+    where: { id: params.liveEventBandId },
+    select: { liveEventId: true },
+  });
+  if (!leb || leb.liveEventId !== params.id) {
     return Response.json({ error: "Band participation not found" }, { status: 404 });
   }
 
-  return Response.json(liveEventBand.setlist);
+  const setlist = await prisma.setlist.findUnique({
+    where: { liveEventBandId: params.liveEventBandId },
+    include: { songs: { orderBy: { order: "asc" } } },
+  });
+  if (!setlist) return Response.json({ error: "Setlist not found" }, { status: 404 });
+
+  return Response.json(serializeSetlist(setlist));
 }
 
 export async function PUT(
@@ -30,33 +35,44 @@ export async function PUT(
   const { error } = await requireSession();
   if (error) return error;
 
-  const event = liveEvents.get(params.id);
-  if (!event) return Response.json({ error: "Not Found" }, { status: 404 });
-
-  const liveEventBand = event.bands.find(
-    (b) => b.id === params.liveEventBandId
-  );
-  if (!liveEventBand) {
+  const leb = await prisma.liveEventBand.findUnique({
+    where: { id: params.liveEventBandId },
+    select: { liveEventId: true },
+  });
+  if (!leb || leb.liveEventId !== params.id) {
     return Response.json({ error: "Band participation not found" }, { status: 404 });
   }
 
   const body: UpdateSetlistRequest = await request.json();
-  const now = new Date().toISOString();
-  const updatedSetlist = {
-    ...liveEventBand.setlist,
-    songs: body.songs,
-    updatedAt: now,
-  };
 
-  liveEvents.set(params.id, {
-    ...event,
-    bands: event.bands.map((b) =>
-      b.id === params.liveEventBandId
-        ? { ...b, setlist: updatedSetlist }
-        : b
-    ),
-    updatedAt: now,
+  const setlist = await prisma.$transaction(async (tx) => {
+    const existing = await tx.setlist.findUnique({
+      where: { liveEventBandId: params.liveEventBandId },
+      select: { id: true },
+    });
+    if (!existing) return null;
+
+    await tx.setlistSong.deleteMany({ where: { setlistId: existing.id } });
+
+    if (body.songs.length > 0) {
+      await tx.setlistSong.createMany({
+        data: body.songs.map((s) => ({
+          setlistId: existing.id,
+          title: s.title,
+          duration: s.duration ?? null,
+          order: s.order,
+          note: s.note ?? null,
+        })),
+      });
+    }
+
+    return tx.setlist.findUnique({
+      where: { id: existing.id },
+      include: { songs: { orderBy: { order: "asc" } } },
+    });
   });
 
-  return Response.json(updatedSetlist);
+  if (!setlist) return Response.json({ error: "Setlist not found" }, { status: 404 });
+
+  return Response.json(serializeSetlist(setlist));
 }

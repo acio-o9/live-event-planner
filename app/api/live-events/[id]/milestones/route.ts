@@ -1,5 +1,6 @@
 import { requireSession } from "@/lib/api/session";
-import { liveEvents } from "@/lib/store";
+import { prisma } from "@/lib/prisma";
+import { serializeMilestone } from "@/lib/db/serializers";
 import { NextRequest } from "next/server";
 
 export async function GET(
@@ -9,8 +10,14 @@ export async function GET(
   const { error } = await requireSession();
   if (error) return error;
 
-  const event = liveEvents.get(params.id);
-  if (!event) return Response.json({ error: "Not Found" }, { status: 404 });
+  const eventExists = await prisma.liveEvent.findUnique({ where: { id: params.id }, select: { id: true } });
+  if (!eventExists) return Response.json({ error: "Not Found" }, { status: 404 });
 
-  return Response.json(event.milestones);
+  const milestones = await prisma.milestone.findMany({
+    where: { liveEventId: params.id },
+    include: { tasks: { orderBy: { order: "asc" } } },
+    orderBy: { order: "asc" },
+  });
+
+  return Response.json(milestones.map(serializeMilestone));
 }

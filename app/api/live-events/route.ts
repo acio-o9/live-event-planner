@@ -1,44 +1,20 @@
 import { requireSession } from "@/lib/api/session";
-import { liveEvents, generateId } from "@/lib/store";
-import { CreateLiveEventRequest, LiveEvent, Milestone, Task } from "@/lib/types";
-import {
-  MILESTONE_TEMPLATES,
-  EVENT_TASK_TEMPLATES,
-  calcDueDate,
-} from "@/lib/task-templates";
+import { prisma } from "@/lib/prisma";
+import { liveEventInclude, serializeLiveEvent } from "@/lib/db/serializers";
+import { CreateLiveEventRequest } from "@/lib/types";
+import { MILESTONE_TEMPLATES, EVENT_TASK_TEMPLATES, calcDueDate } from "@/lib/task-templates";
 import { NextRequest } from "next/server";
-
-function buildMilestonesWithTasks(eventDate?: string): Milestone[] {
-  return MILESTONE_TEMPLATES.map((mt) => {
-    const dueDate = eventDate ? calcDueDate(eventDate, mt.offsetDays) : undefined;
-    const tasks: Task[] = EVENT_TASK_TEMPLATES.filter(
-      (tt) => tt.milestoneOrder === mt.order
-    ).map((tt, idx) => ({
-      id: generateId(),
-      milestoneId: "", // 後で上書き
-      title: tt.title,
-      status: "pending",
-      order: idx + 1,
-    }));
-
-    const milestoneId = generateId();
-    return {
-      id: milestoneId,
-      liveEventId: "", // 後で上書き
-      title: mt.title,
-      dueDate,
-      status: "pending",
-      order: mt.order,
-      tasks: tasks.map((t) => ({ ...t, milestoneId })),
-    };
-  });
-}
 
 export async function GET() {
   const { error } = await requireSession();
   if (error) return error;
 
-  return Response.json(liveEvents.getAll());
+  const events = await prisma.liveEvent.findMany({
+    include: liveEventInclude,
+    orderBy: { createdAt: "desc" },
+  });
+
+  return Response.json(events.map(serializeLiveEvent));
 }
 
 export async function POST(request: NextRequest) {
@@ -50,27 +26,54 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "title is required" }, { status: 400 });
   }
 
-  const id = generateId();
-  const now = new Date().toISOString();
-  const milestones = buildMilestonesWithTasks(body.date).map((m) => ({
-    ...m,
-    liveEventId: id,
-  }));
+  const event = await prisma.$transaction(async (tx) => {
+    await tx.user.upsert({
+      where: { sub: session.user.sub },
+      update: { nickname: session.user.nickname, avatarUrl: session.user.avatarUrl ?? null },
+      create: { sub: session.user.sub, nickname: session.user.nickname, avatarUrl: session.user.avatarUrl ?? null },
+    });
 
-  const liveEvent: LiveEvent = {
-    id,
-    title: body.title.trim(),
-    description: body.description,
-    date: body.date,
-    venue: body.venue,
-    bands: [],
-    milestones,
-    status: "planning",
-    createdBy: session.user.sub,
-    createdAt: now,
-    updatedAt: now,
-  };
+    const liveEvent = await tx.liveEvent.create({
+      data: {
+        title: body.title.trim(),
+        description: body.description,
+        date: body.date ? new Date(body.date) : null,
+        venue: body.venue,
+        status: "planning",
+        createdBy: session.user.sub,
+      },
+    });
 
-  liveEvents.set(id, liveEvent);
-  return Response.json(liveEvent, { status: 201 });
+    for (const mt of MILESTONE_TEMPLATES) {
+      const dueDate = body.date ? new Date(calcDueDate(body.date, mt.offsetDays)) : null;
+      const milestone = await tx.milestone.create({
+        data: {
+          liveEventId: liveEvent.id,
+          title: mt.title,
+          dueDate,
+          status: "pending",
+          order: mt.order,
+        },
+      });
+
+      const eventTasks = EVENT_TASK_TEMPLATES.filter((tt) => tt.milestoneOrder === mt.order);
+      for (let i = 0; i < eventTasks.length; i++) {
+        await tx.task.create({
+          data: {
+            milestoneId: milestone.id,
+            title: eventTasks[i].title,
+            status: "pending",
+            order: i + 1,
+          },
+        });
+      }
+    }
+
+    return tx.liveEvent.findUnique({
+      where: { id: liveEvent.id },
+      include: liveEventInclude,
+    });
+  });
+
+  return Response.json(serializeLiveEvent(event!), { status: 201 });
 }

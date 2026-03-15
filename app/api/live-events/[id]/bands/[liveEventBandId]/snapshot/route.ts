@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/api/session";
-import { liveEvents } from "@/lib/store";
-import { MemberSnapshot } from "@/lib/types";
+import { prisma } from "@/lib/prisma";
+import { serializeMemberSnapshot } from "@/lib/db/serializers";
 import { NextRequest } from "next/server";
 
 export async function POST(
@@ -10,39 +10,44 @@ export async function POST(
   const { error } = await requireSession();
   if (error) return error;
 
-  const event = liveEvents.get(params.id);
-  if (!event) return Response.json({ error: "Not Found" }, { status: 404 });
-
-  const liveEventBand = event.bands.find(
-    (b) => b.id === params.liveEventBandId
-  );
-  if (!liveEventBand) {
+  const leb = await prisma.liveEventBand.findUnique({
+    where: { id: params.liveEventBandId },
+    include: {
+      band: { include: { members: { include: { user: true } } } },
+      snapshots: true,
+    },
+  });
+  if (!leb || leb.liveEventId !== params.id) {
     return Response.json({ error: "Band participation not found" }, { status: 404 });
   }
 
-  if (liveEventBand.snapshotTakenAt) {
-    return Response.json(
-      { error: "Snapshot already taken" },
-      { status: 409 }
-    );
+  if (leb.snapshotTakenAt) {
+    return Response.json({ error: "Snapshot already taken" }, { status: 409 });
   }
 
-  const now = new Date().toISOString();
-  const snapshot: MemberSnapshot[] = liveEventBand.band.members.map((m) => ({
-    userSub: m.userSub,
-    nickname: m.user.nickname,
-    role: m.role,
-  }));
+  const now = new Date();
+  const snapshots = await prisma.$transaction(async (tx) => {
+    await tx.liveEventBand.update({
+      where: { id: params.liveEventBandId },
+      data: { snapshotTakenAt: now },
+    });
 
-  liveEvents.set(params.id, {
-    ...event,
-    bands: event.bands.map((b) =>
-      b.id === params.liveEventBandId
-        ? { ...b, memberSnapshot: snapshot, snapshotTakenAt: now }
-        : b
-    ),
-    updatedAt: now,
+    const created = await tx.memberSnapshot.createMany({
+      data: leb.band.members.map((m) => ({
+        liveEventBandId: params.liveEventBandId,
+        userSub: m.userSub,
+        nickname: m.user.nickname,
+        role: m.role,
+      })),
+    });
+
+    return tx.memberSnapshot.findMany({
+      where: { liveEventBandId: params.liveEventBandId },
+    });
   });
 
-  return Response.json({ snapshot, snapshotTakenAt: now });
+  return Response.json({
+    snapshot: snapshots.map(serializeMemberSnapshot),
+    snapshotTakenAt: now.toISOString(),
+  });
 }

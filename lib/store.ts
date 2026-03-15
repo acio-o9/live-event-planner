@@ -1,6 +1,5 @@
 /**
- * 開発用インメモリデータストア。
- * 本番環境ではデータベースに置き換える。
+ * @deprecated Prismaに移行済み。テストファイルのみが参照している。
  */
 import { Band, LiveEvent, User } from "./types";
 

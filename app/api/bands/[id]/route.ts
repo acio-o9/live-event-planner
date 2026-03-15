@@ -1,5 +1,6 @@
 import { requireSession } from "@/lib/api/session";
-import { bands } from "@/lib/store";
+import { prisma } from "@/lib/prisma";
+import { bandInclude, serializeBand } from "@/lib/db/serializers";
 import { UpdateBandRequest } from "@/lib/types";
 import { NextRequest } from "next/server";
 
@@ -10,10 +11,13 @@ export async function GET(
   const { error } = await requireSession();
   if (error) return error;
 
-  const band = bands.get(params.id);
+  const band = await prisma.band.findUnique({
+    where: { id: params.id },
+    include: bandInclude,
+  });
   if (!band) return Response.json({ error: "Not Found" }, { status: 404 });
 
-  return Response.json(band);
+  return Response.json(serializeBand(band));
 }
 
 export async function PUT(
@@ -23,16 +27,18 @@ export async function PUT(
   const { error } = await requireSession();
   if (error) return error;
 
-  const band = bands.get(params.id);
-  if (!band) return Response.json({ error: "Not Found" }, { status: 404 });
+  const exists = await prisma.band.findUnique({ where: { id: params.id }, select: { id: true } });
+  if (!exists) return Response.json({ error: "Not Found" }, { status: 404 });
 
   const body: UpdateBandRequest = await request.json();
-  const updated = bands.set(params.id, {
-    ...band,
-    ...(body.name !== undefined && { name: body.name.trim() }),
-    ...(body.description !== undefined && { description: body.description }),
-    updatedAt: new Date().toISOString(),
+  const band = await prisma.band.update({
+    where: { id: params.id },
+    data: {
+      ...(body.name !== undefined && { name: body.name.trim() }),
+      ...(body.description !== undefined && { description: body.description }),
+    },
+    include: bandInclude,
   });
 
-  return Response.json(updated);
+  return Response.json(serializeBand(band));
 }
