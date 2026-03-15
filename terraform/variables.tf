@@ -70,3 +70,8 @@ variable "desired_count" {
   type        = number
   default     = 1
 }
+
+variable "github_repository" {
+  description = "GitHub repository in format 'owner/repo' for OIDC (e.g. 'myorg/live-event-planner')"
+  type        = string
+}
