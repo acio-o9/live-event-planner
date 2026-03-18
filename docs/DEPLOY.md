@@ -270,6 +270,83 @@ GitHub Actions の進捗は:
 
 ---
 
+---
+
+## 本番環境への移行手順
+
+現在の構成は検証・デモ用にコストを最適化しています。本番運用前に以下を変更してください。
+
+### 1. NAT Gateway を復活させる
+
+`terraform/vpc.tf` の NAT Gateway リソースを追加:
+
+```hcl
+resource "aws_eip" "nat" {
+  domain = "vpc"
+  tags   = { Name = "${var.app_name}-nat-eip" }
+}
+
+resource "aws_nat_gateway" "main" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public[0].id
+  tags          = { Name = "${var.app_name}-nat" }
+}
+```
+
+`aws_route_table "private"` にルートを追加:
+
+```hcl
+route {
+  cidr_block     = "0.0.0.0/0"
+  nat_gateway_id = aws_nat_gateway.main.id
+}
+```
+
+### 2. ECS をプライベートサブネットに戻す
+
+`terraform/ecs.tf` の `network_configuration` を変更:
+
+```hcl
+network_configuration {
+  subnets          = aws_subnet.private[*].id
+  security_groups  = [aws_security_group.ecs.id]
+  assign_public_ip = false
+}
+```
+
+### 3. Fargate Spot をやめる
+
+`terraform/ecs.tf` の `capacity_provider_strategy` ブロックを削除し、代わりに:
+
+```hcl
+launch_type = "FARGATE"
+```
+
+### 4. Aurora の最小 ACU を上げる
+
+`terraform/rds.tf`:
+
+```hcl
+serverlessv2_scaling_configuration {
+  min_capacity = 0.5
+  max_capacity = 4
+}
+```
+
+### 5. HTTPS を有効化
+
+`terraform/alb.tf` の HTTPS リスナーのコメントを外し、ACM 証明書 ARN を設定する。
+
+### 6. 変更を適用
+
+```bash
+cd terraform
+terraform plan
+terraform apply
+```
+
+---
+
 ## トラブルシューティング
 
 ### ECS タスクが起動しない

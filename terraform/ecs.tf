@@ -58,12 +58,19 @@ resource "aws_ecs_service" "app" {
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = var.desired_count
-  launch_type     = "FARGATE"
+  # 検証環境: Fargate Spot でコスト削減（約70%割引、中断リスクあり）
+  # 本番移行時: capacity_provider_strategy ブロックを削除し launch_type = "FARGATE" に戻す
+  capacity_provider_strategy {
+    capacity_provider = "FARGATE_SPOT"
+    weight            = 1
+  }
 
   network_configuration {
-    subnets          = aws_subnet.private[*].id
+    # 検証環境: パブリックサブネット + パブリックIP（NAT Gateway 不要）
+    # 本番移行時: aws_subnet.private[*].id に変更し assign_public_ip = false にする
+    subnets          = aws_subnet.public[*].id
     security_groups  = [aws_security_group.ecs.id]
-    assign_public_ip = false
+    assign_public_ip = true
   }
 
   load_balancer {

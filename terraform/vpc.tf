@@ -49,25 +49,16 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-# NAT Gateway (ECSコンテナからのアウトバウンド通信用)
-resource "aws_eip" "nat" {
-  domain = "vpc"
-  tags   = { Name = "${var.app_name}-nat-eip" }
-}
-
-resource "aws_nat_gateway" "main" {
-  allocation_id = aws_eip.nat.id
-  subnet_id     = aws_subnet.public[0].id
-  tags          = { Name = "${var.app_name}-nat" }
-}
+# NAT Gateway は本番環境で使用（コスト削減のため検証環境では無効化）
+# 本番移行時は docs/DEPLOY.md の「本番環境への移行手順」を参照
 
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
-
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.main.id
-  }
+  # 本番移行時: NAT Gateway のルートを追加する
+  # route {
+  #   cidr_block     = "0.0.0.0/0"
+  #   nat_gateway_id = aws_nat_gateway.main.id
+  # }
 
   tags = { Name = "${var.app_name}-private-rt" }
 }

@@ -9,7 +9,7 @@ resource "aws_rds_cluster" "aurora" {
   cluster_identifier     = "${var.app_name}-aurora"
   engine                 = "aurora-postgresql"
   engine_mode            = "provisioned"
-  engine_version         = "15.4"
+  engine_version         = "15.8"
   database_name          = "live_event_planner"
   master_username        = var.db_username
   master_password        = var.db_password
@@ -20,7 +20,9 @@ resource "aws_rds_cluster" "aurora" {
   deletion_protection    = true
 
   serverlessv2_scaling_configuration {
-    min_capacity = 0.5
+    # 検証環境: 0 でアイドル時に停止（初回接続に数秒かかる）
+    # 本番移行時: min_capacity = 0.5 に変更する
+    min_capacity = 0
     max_capacity = 4
   }
 }
