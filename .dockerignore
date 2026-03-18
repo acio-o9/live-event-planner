@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+.gitignore
+*.md
+.env*.local
+.env.local
+terraform
+.claude
+docs
+**/__tests__
+**/*.test.ts
+**/*.test.tsx
+jest.config.ts
+jest.setup.ts

@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  sub       String   @id
+  nickname  String
+  avatarUrl String?
+  createdAt DateTime @default(now())
+
+  createdBands    Band[]
+  createdEvents   LiveEvent[]
+  bandMemberships BandMember[]
+  assignedTasks   Task[]       @relation("AssignedTasks")
+}
+
+model Band {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creator    User            @relation(fields: [createdBy], references: [sub])
+  members    BandMember[]
+  eventBands LiveEventBand[]
+}
+
+model BandMember {
+  bandId   String
+  userSub  String
+  role     String   @default("member")
+  joinedAt DateTime @default(now())
+
+  band Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userSub], references: [sub])
+
+  @@id([bandId, userSub])
+}
+
+model LiveEvent {
+  id            String    @id @default(uuid())
+  title         String
+  description   String?
+  date          DateTime?
+  venue         String?
+  photoAlbumUrl String?
+  status        String    @default("planning")
+  createdBy     String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  creator    User            @relation(fields: [createdBy], references: [sub])
+  bands      LiveEventBand[]
+  milestones Milestone[]
+}
+
+model LiveEventBand {
+  id              String    @id @default(uuid())
+  liveEventId     String
+  bandId          String
+  snapshotTakenAt DateTime?
+  createdAt       DateTime  @default(now())
+
+  liveEvent LiveEvent        @relation(fields: [liveEventId], references: [id], onDelete: Cascade)
+  band      Band             @relation(fields: [bandId], references: [id])
+  snapshots MemberSnapshot[]
+  setlist   Setlist?
+  tasks     Task[]
+
+  @@unique([liveEventId, bandId])
+}
+
+model MemberSnapshot {
+  id              String   @id @default(uuid())
+  liveEventBandId String
+  userSub         String
+  nickname        String
+  role            String
+  takenAt         DateTime @default(now())
+
+  liveEventBand LiveEventBand @relation(fields: [liveEventBandId], references: [id], onDelete: Cascade)
+}
+
+model Milestone {
+  id          String    @id @default(uuid())
+  liveEventId String
+  title       String
+  dueDate     DateTime?
+  status      String    @default("pending")
+  order       Int
+  createdAt   DateTime  @default(now())
+
+  liveEvent LiveEvent @relation(fields: [liveEventId], references: [id], onDelete: Cascade)
+  tasks     Task[]
+}
+
+model Task {
+  id              String   @id @default(uuid())
+  milestoneId     String
+  liveEventBandId String?
+  title           String
+  assigneeUserSub String?
+  status          String   @default("pending")
+  order           Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  milestone     Milestone      @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  liveEventBand LiveEventBand? @relation(fields: [liveEventBandId], references: [id], onDelete: Cascade)
+  assignee      User?          @relation("AssignedTasks", fields: [assigneeUserSub], references: [sub])
+}
+
+model Setlist {
+  id              String   @id @default(uuid())
+  liveEventBandId String   @unique
+  updatedAt       DateTime @updatedAt
+
+  liveEventBand LiveEventBand @relation(fields: [liveEventBandId], references: [id], onDelete: Cascade)
+  songs         SetlistSong[]
+}
+
+model SetlistSong {
+  id        String  @id @default(uuid())
+  setlistId String
+  title     String
+  duration  Int?
+  order     Int
+  note      String?
+
+  setlist Setlist @relation(fields: [setlistId], references: [id], onDelete: Cascade)
+}

@@ -1,0 +1,39 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      # node_modules はコンテナ内のもの（Linux バイナリ）を優先
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/live_event_planner
+      - AUTH_SECRET=dev-secret-key-change-in-production
+      - NEXTAUTH_URL=http://localhost:3000
+      - NODE_ENV=development
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: live_event_planner
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

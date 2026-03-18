@@ -1,0 +1,20 @@
+aws_region   = "ap-northeast-1"
+app_name     = "live-event-planner"
+environment  = "production"
+
+# Database
+db_username  = "postgres"
+db_password  = "CHANGE_ME_strong_password"
+
+# NextAuth
+# auth_secret は `openssl rand -base64 32` で生成
+auth_secret  = "CHANGE_ME_run_openssl_rand_-base64_32"
+# nextauth_url は初回 terraform apply 後に ALB DNS 名を確認してから更新
+nextauth_url = "http://CHANGE_ME_alb_dns_name"
+
+# Google OAuth (Google Cloud Console で取得)
+google_client_id     = "CHANGE_ME.apps.googleusercontent.com"
+google_client_secret = "CHANGE_ME"
+
+# GitHub リポジトリ (OIDC認証用: "owner/repo" 形式)
+github_repository = "CHANGE_ME_username/live-event-planner"
