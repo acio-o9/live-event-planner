@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { MilestoneList } from "@/components/live-events/MilestoneList";
+import { AddBandModal } from "@/components/live-events/AddBandModal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { liveEventsApi } from "@/lib/api/live-events";
 import { LiveEvent } from "@/lib/types";
@@ -15,6 +16,7 @@ function LiveEventDetailPage() {
   const [event, setEvent] = useState<LiveEvent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAddBand, setShowAddBand] = useState(false);
 
   useEffect(() => {
     liveEventsApi
@@ -75,7 +77,15 @@ function LiveEventDetailPage() {
       </div>
 
       <section>
-        <h2 className="text-lg font-semibold text-gray-700 mb-3">参加バンド</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold text-gray-700">参加バンド</h2>
+          <button
+            onClick={() => setShowAddBand(true)}
+            className="text-sm text-blue-600 hover:underline"
+          >
+            + バンドを追加
+          </button>
+        </div>
         {event.bands.length === 0 ? (
           <p className="text-gray-400 text-sm">まだ参加バンドがいません</p>
         ) : (
@@ -95,6 +105,31 @@ function LiveEventDetailPage() {
             ))}
           </ul>
         )}
+      </section>
+
+      {showAddBand && (
+        <AddBandModal
+          alreadyAddedBandIds={event.bands.map((b) => b.bandId)}
+          onSubmit={async (bandId) => {
+            const liveEventBand = await liveEventsApi.addBand(id, { bandId });
+            setEvent((prev) =>
+              prev ? { ...prev, bands: [...prev.bands, liveEventBand] } : prev
+            );
+          }}
+          onClose={() => setShowAddBand(false)}
+        />
+      )}
+
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold text-gray-700">費用管理</h2>
+          <Link
+            href={`/live-events/${id}/expenses`}
+            className="text-sm text-blue-600 hover:underline"
+          >
+            費用を管理 →
+          </Link>
+        </div>
       </section>
 
       <section>

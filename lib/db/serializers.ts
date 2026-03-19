@@ -9,6 +9,7 @@ import type {
   Task,
   Setlist,
   SetlistSong,
+  Expense,
 } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
@@ -216,6 +217,32 @@ export function serializeLiveEventBand(b: PrismaLiveEventBand): LiveEventBand {
     // setlist is always created together with LiveEventBand
     setlist: serializeSetlist(b.setlist!),
     snapshotTakenAt: b.snapshotTakenAt?.toISOString() ?? undefined,
+  };
+}
+
+type PrismaExpense = {
+  id: string;
+  liveEventId: string;
+  paidBy: string;
+  amount: number;
+  category: string;
+  description: string;
+  createdAt: Date;
+  updatedAt: Date;
+  paidByUser: PrismaUser;
+};
+
+export function serializeExpense(e: PrismaExpense): Expense {
+  return {
+    id: e.id,
+    liveEventId: e.liveEventId,
+    paidBy: e.paidBy,
+    paidByName: e.paidByUser.nickname,
+    amount: e.amount,
+    category: e.category,
+    description: e.description,
+    createdAt: e.createdAt.toISOString(),
+    updatedAt: e.updatedAt.toISOString(),
   };
 }
 

@@ -17,6 +17,7 @@ model User {
   createdEvents   LiveEvent[]
   bandMemberships BandMember[]
   assignedTasks   Task[]       @relation("AssignedTasks")
+  paidExpenses    Expense[]
 }
 
 model Band {
@@ -59,6 +60,21 @@ model LiveEvent {
   creator    User            @relation(fields: [createdBy], references: [sub])
   bands      LiveEventBand[]
   milestones Milestone[]
+  expenses   Expense[]
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  liveEventId String
+  paidBy      String
+  amount      Int
+  category    String   @default("その他")
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  liveEvent  LiveEvent @relation(fields: [liveEventId], references: [id], onDelete: Cascade)
+  paidByUser User      @relation(fields: [paidBy], references: [sub])
 }
 
 model LiveEventBand {

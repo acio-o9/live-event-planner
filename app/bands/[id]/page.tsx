@@ -6,7 +6,7 @@ import { AuthGuard } from "@/components/auth/AuthGuard";
 import { MemberList } from "@/components/bands/MemberList";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { bandsApi } from "@/lib/api/bands";
-import { Band } from "@/lib/types";
+import { Band, User } from "@/lib/types";
 import { useAuth } from "@/hooks/useAuth";
 
 function BandDetailPage() {
@@ -16,7 +16,8 @@ function BandDetailPage() {
   const [band, setBand] = useState<Band | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [addSubInput, setAddSubInput] = useState("");
+  const [allUsers, setAllUsers] = useState<User[]>([]);
+  const [selectedSub, setSelectedSub] = useState("");
 
   useEffect(() => {
     bandsApi
@@ -24,6 +25,10 @@ function BandDetailPage() {
       .then(setBand)
       .catch((e) => setError(e.message))
       .finally(() => setIsLoading(false));
+
+    fetch("/api/users")
+      .then((r) => r.json())
+      .then(setAllUsers);
   }, [id]);
 
   const handleRemoveMember = async (userSub: string) => {
@@ -33,13 +38,10 @@ function BandDetailPage() {
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!addSubInput.trim()) return;
-    const updated = await bandsApi.addMember(id, {
-      userSub: addSubInput.trim(),
-      role: "member",
-    });
+    if (!selectedSub) return;
+    const updated = await bandsApi.addMember(id, { userSub: selectedSub, role: "member" });
     setBand(updated);
-    setAddSubInput("");
+    setSelectedSub("");
   };
 
   if (isLoading) return <div className="flex justify-center py-16"><LoadingSpinner /></div>;
@@ -69,16 +71,24 @@ function BandDetailPage() {
         />
 
         <form onSubmit={handleAddMember} className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
-          <input
-            type="text"
-            value={addSubInput}
-            onChange={(e) => setAddSubInput(e.target.value)}
-            placeholder="ユーザーのsub ID"
+          <select
+            value={selectedSub}
+            onChange={(e) => setSelectedSub(e.target.value)}
             className="flex-1 text-sm border border-gray-300 rounded px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          />
+          >
+            <option value="">ユーザーを選択...</option>
+            {allUsers
+              .filter((u) => !band?.members.some((m) => m.userSub === u.sub))
+              .map((u) => (
+                <option key={u.sub} value={u.sub}>
+                  {u.nickname}
+                </option>
+              ))}
+          </select>
           <button
             type="submit"
-            className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200"
+            disabled={!selectedSub}
+            className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200 disabled:opacity-50"
           >
             追加
           </button>

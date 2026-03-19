@@ -207,6 +207,53 @@ export interface UpdateSetlistRequest {
   songs: SetlistSong[];
 }
 
+// --- Expense ---
+
+export interface Expense {
+  id: string;
+  liveEventId: string;
+  paidBy: string;       // User.sub
+  paidByName: string;   // 表示用ニックネーム
+  amount: number;       // 金額（円）
+  category: string;     // 会場費・機材費・飲食費・その他
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExpenseFormData {
+  paidBy: string;
+  amount: number;
+  category: string;
+  description: string;
+}
+
+export interface ExpenseSummary {
+  totalAmount: number;
+  participantCount: number;
+  perPersonAmount: number;
+  breakdown: {
+    userSub: string;
+    nickname: string;
+    paidAmount: number;
+    balance: number; // 正: 受け取り、負: 支払い
+  }[];
+}
+
+export interface CreateExpenseRequest {
+  paidBy: string;
+  amount: number;
+  category: string;
+  description?: string;
+}
+
+export interface UpdateExpenseRequest {
+  paidBy?: string;
+  amount?: number;
+  category?: string;
+  description?: string;
+}
+
 // --- API Error ---
 
 export interface ApiError {
