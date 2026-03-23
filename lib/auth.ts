@@ -7,6 +7,7 @@ const hasGoogleCreds =
   !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   providers: [
     // Google OIDC（クレデンシャルが設定されている場合のみ有効）
     ...(hasGoogleCreds
