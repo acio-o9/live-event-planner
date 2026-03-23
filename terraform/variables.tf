@@ -75,3 +75,9 @@ variable "github_repository" {
   description = "GitHub repository in format 'owner/repo' for OIDC (e.g. 'myorg/live-event-planner')"
   type        = string
 }
+
+variable "acm_certificate_arn" {
+  description = "ACM certificate ARN for HTTPS"
+  type        = string
+  default     = ""
+}

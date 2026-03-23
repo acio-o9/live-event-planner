@@ -18,3 +18,6 @@ google_client_secret = "CHANGE_ME"
 
 # GitHub リポジトリ (OIDC認証用: "owner/repo" 形式)
 github_repository = "CHANGE_ME_username/live-event-planner"
+
+# ACM 証明書 ARN (HTTPS用: ドメイン取得後に設定)
+acm_certificate_arn = "CHANGE_ME_acm_certificate_arn"
