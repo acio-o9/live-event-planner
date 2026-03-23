@@ -10,6 +10,7 @@ import type {
   Setlist,
   SetlistSong,
   Expense,
+  BandSchedule,
 } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
@@ -243,6 +244,32 @@ export function serializeExpense(e: PrismaExpense): Expense {
     description: e.description,
     createdAt: e.createdAt.toISOString(),
     updatedAt: e.updatedAt.toISOString(),
+  };
+}
+
+type PrismaBandSchedule = {
+  id: string;
+  bandId: string;
+  location: string;
+  startAt: Date;
+  endAt: Date;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+  band: { name: string };
+};
+
+export function serializeBandSchedule(s: PrismaBandSchedule): BandSchedule {
+  return {
+    id: s.id,
+    bandId: s.bandId,
+    bandName: s.band.name,
+    location: s.location,
+    startAt: s.startAt.toISOString(),
+    endAt: s.endAt.toISOString(),
+    createdBy: s.createdBy,
+    createdAt: s.createdAt.toISOString(),
+    updatedAt: s.updatedAt.toISOString(),
   };
 }
 
