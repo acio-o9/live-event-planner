@@ -31,6 +31,10 @@ resource "aws_ecs_task_definition" "app" {
         { containerPort = 3000, protocol = "tcp" }
       ]
 
+      environment = [
+        { name = "AUTH_TRUST_HOST", value = "true" }
+      ]
+
       secrets = [
         { name = "DATABASE_URL",         valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:DATABASE_URL::" },
         { name = "AUTH_SECRET",          valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:AUTH_SECRET::" },
