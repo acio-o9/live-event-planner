@@ -9,6 +9,7 @@ resource "aws_secretsmanager_secret_version" "app_secrets" {
   secret_string = jsonencode({
     DATABASE_URL         = "postgresql://${var.db_username}:${var.db_password}@${aws_rds_cluster.aurora.endpoint}:5432/live_event_planner"
     AUTH_SECRET          = var.auth_secret
+    AUTH_URL             = var.nextauth_url
     NEXTAUTH_URL         = var.nextauth_url
     GOOGLE_CLIENT_ID     = var.google_client_id
     GOOGLE_CLIENT_SECRET = var.google_client_secret
