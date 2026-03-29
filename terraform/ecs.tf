@@ -58,10 +58,11 @@ resource "aws_ecs_task_definition" "app" {
 }
 
 resource "aws_ecs_service" "app" {
-  name            = var.app_name
-  cluster         = aws_ecs_cluster.main.id
-  task_definition = aws_ecs_task_definition.app.arn
-  desired_count   = var.desired_count
+  name                               = var.app_name
+  cluster                            = aws_ecs_cluster.main.id
+  task_definition                    = aws_ecs_task_definition.app.arn
+  desired_count                      = var.desired_count
+  health_check_grace_period_seconds  = 120
   # 検証環境: Fargate Spot でコスト削減（約70%割引、中断リスクあり）
   # 本番移行時: capacity_provider_strategy ブロックを削除し launch_type = "FARGATE" に戻す
   capacity_provider_strategy {
