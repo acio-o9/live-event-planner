@@ -20,9 +20,7 @@ resource "aws_rds_cluster" "aurora" {
   deletion_protection    = true
 
   serverlessv2_scaling_configuration {
-    # 検証環境: 0 でアイドル時に停止（初回接続に数秒かかる）
-    # 本番移行時: min_capacity = 0.5 に変更する
-    min_capacity = 0
+    min_capacity = 0.5
     max_capacity = 4
   }
 }
