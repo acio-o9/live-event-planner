@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "本気管理部",
-  description: "社会人サークルのライブイベント企画・運営システム",
+  description: "企画・運営も本気！",
 };
 
 export default function RootLayout({
