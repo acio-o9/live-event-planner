@@ -13,5 +13,6 @@ resource "aws_secretsmanager_secret_version" "app_secrets" {
     NEXTAUTH_URL         = var.nextauth_url
     GOOGLE_CLIENT_ID     = var.google_client_id
     GOOGLE_CLIENT_SECRET = var.google_client_secret
+    SLACK_BOT_TOKEN      = var.slack_bot_token
   })
 }

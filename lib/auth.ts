@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
+import { isEmailAllowed } from "@/lib/auth/slack-allowlist";
 
 const isDev = process.env.NODE_ENV === "development";
 const hasGoogleCreds =
@@ -41,6 +42,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       : []),
   ],
   callbacks: {
+    // Slackメンバーのみログインを許可する
+    async signIn({ user, account }) {
+      // 開発用モックログインはスキップ（ローカル環境のみ有効）
+      if (account?.provider === "dev-login") return true;
+      if (!user.email) return false;
+      const allowed = await isEmailAllowed(user.email);
+      if (!allowed) return "/auth/error?error=AccessDenied";
+      return true;
+    },
     // JWT にユーザーの sub を保持する
     jwt({ token, account, profile, user }) {
       if (account?.provider === "dev-login" && user) {
@@ -65,6 +75,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   pages: {
     signIn: "/auth/signin",
+    error: "/auth/error",
   },
   session: {
     strategy: "jwt",

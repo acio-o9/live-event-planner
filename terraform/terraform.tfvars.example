@@ -16,6 +16,9 @@ nextauth_url = "http://CHANGE_ME_alb_dns_name"
 google_client_id     = "CHANGE_ME.apps.googleusercontent.com"
 google_client_secret = "CHANGE_ME"
 
+# Slack Bot Token (Slack API: users:read.email スコープが必要)
+slack_bot_token = "xoxb-CHANGE_ME"
+
 # GitHub リポジトリ (OIDC認証用: "owner/repo" 形式)
 github_repository = "CHANGE_ME_username/live-event-planner"
 
