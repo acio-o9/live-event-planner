@@ -32,7 +32,7 @@ export default function SignInPage() {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 w-full max-w-sm space-y-6">
         <div className="text-center">
           <div className="text-4xl mb-2">🎸</div>
-          <h1 className="text-xl font-bold text-gray-900">Live Event Planner</h1>
+          <h1 className="text-xl font-bold text-gray-900">本気管理部</h1>
           <p className="text-sm text-gray-500 mt-1">ログインして始める</p>
         </div>
 

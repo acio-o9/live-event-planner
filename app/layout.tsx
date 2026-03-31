@@ -5,7 +5,7 @@ import { Navigation } from "@/components/ui/Navigation";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Live Event Planner",
+  title: "本気管理部",
   description: "社会人サークルのライブイベント企画・運営システム",
 };
 

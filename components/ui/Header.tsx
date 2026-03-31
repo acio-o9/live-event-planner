@@ -11,7 +11,7 @@ export function Header() {
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
       <Link href="/" className="text-xl font-bold text-gray-900">
-        🎸 Live Event Planner
+        🎸 本気管理部
       </Link>
       <div className="flex items-center gap-4">
         {isAuthenticated && user ? (
