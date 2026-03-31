@@ -4,23 +4,25 @@ import { fetchSlackAllowedEmails, isEmailAllowed } from "../auth/slack-allowlist
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
-function makeSlackResponse(members: object[]) {
-  return {
-    ok: true,
-    members,
-  };
-}
-
-function mockSlackMembers(members: object[]) {
-  mockFetch.mockResolvedValueOnce({
-    ok: true,
-    json: async () => makeSlackResponse(members),
-  });
-}
+// SLACK_BOT_TOKEN をセット（fetch はモックするので実際には使われない）
+const ORIGINAL_TOKEN = process.env.SLACK_BOT_TOKEN;
+beforeAll(() => {
+  process.env.SLACK_BOT_TOKEN = "xoxb-test-token";
+});
+afterAll(() => {
+  process.env.SLACK_BOT_TOKEN = ORIGINAL_TOKEN;
+});
 
 beforeEach(() => {
   mockFetch.mockClear();
 });
+
+function mockSlackMembers(members: object[]) {
+  mockFetch.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({ ok: true, members }),
+  });
+}
 
 // ---------------------------------------------------------------------------
 // fetchSlackAllowedEmails
@@ -28,10 +30,21 @@ beforeEach(() => {
 
 describe("fetchSlackAllowedEmails", () => {
   describe("ローカル環境（NODE_ENV=development）", () => {
+    const ORIGINAL_NODE_ENV = process.env.NODE_ENV;
+
+    beforeEach(() => {
+      // @ts-expect-error NODE_ENV はテスト内でのみ変更する
+      process.env.NODE_ENV = "development";
+    });
+    afterEach(() => {
+      // @ts-expect-error
+      process.env.NODE_ENV = ORIGINAL_NODE_ENV;
+    });
+
     it("'*' を含む Set を返す（全許可）", async () => {
-      // NODE_ENV は jest の設定で 'test' だが、development と同等の扱いを確認する場合は
-      // 直接 isEmailAllowed の development ブランチをテストする
-      // → isEmailAllowed のテストに委ねる
+      const emails = await fetchSlackAllowedEmails();
+      expect(emails.has("*")).toBe(true);
+      expect(mockFetch).not.toHaveBeenCalled();
     });
   });
 
