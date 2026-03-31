@@ -53,6 +53,12 @@ variable "google_client_secret" {
   sensitive   = true
 }
 
+variable "slack_bot_token" {
+  description = "Slack Bot Token for login allowlist (users:read.email scope required)"
+  type        = string
+  sensitive   = true
+}
+
 variable "container_cpu" {
   description = "ECS task CPU units (256 = 0.25 vCPU)"
   type        = number
