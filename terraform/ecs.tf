@@ -41,7 +41,8 @@ resource "aws_ecs_task_definition" "app" {
         { name = "AUTH_URL",             valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:AUTH_URL::" },
         { name = "NEXTAUTH_URL",         valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:NEXTAUTH_URL::" },
         { name = "GOOGLE_CLIENT_ID",     valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:GOOGLE_CLIENT_ID::" },
-        { name = "GOOGLE_CLIENT_SECRET", valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:GOOGLE_CLIENT_SECRET::" }
+        { name = "GOOGLE_CLIENT_SECRET", valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:GOOGLE_CLIENT_SECRET::" },
+        { name = "SLACK_BOT_TOKEN",      valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:SLACK_BOT_TOKEN::" }
       ]
 
       logConfiguration = {
