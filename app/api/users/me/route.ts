@@ -1,6 +1,6 @@
 import { requireSession } from "@/lib/api/session";
 import { prisma } from "@/lib/prisma";
-import { serializeUser } from "@/lib/db/serializers";
+import { serializeUser, userInclude } from "@/lib/db/serializers";
 
 export async function GET() {
   const { session, error } = await requireSession();
@@ -17,6 +17,75 @@ export async function GET() {
       nickname: session.user.nickname,
       avatarUrl: session.user.avatarUrl ?? null,
     },
+    include: userInclude,
+  });
+
+  return Response.json(serializeUser(user));
+}
+
+// 全角換算文字数カウント（全角=1、半角=0.5）
+function countWidth(str: string): number {
+  let width = 0;
+  for (const char of str) {
+    width += char.match(/[\u3000-\u9fff\uff01-\uff60\uffe0-\uffe6]/) ? 1 : 0.5;
+  }
+  return width;
+}
+
+export async function PUT(request: Request) {
+  const { session, error } = await requireSession();
+  if (error) return error;
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const { nickname, instrumentIds } = body as {
+    nickname?: unknown;
+    instrumentIds?: unknown;
+  };
+
+  // nickname validation
+  if (typeof nickname !== "string" || nickname.trim() === "") {
+    return Response.json({ error: "ニックネームは必須です" }, { status: 400 });
+  }
+  const trimmed = nickname.trim();
+  if (/[\r\n\t]/.test(trimmed)) {
+    return Response.json({ error: "ニックネームに使用できない文字が含まれています" }, { status: 400 });
+  }
+  if (countWidth(trimmed) > 10) {
+    return Response.json({ error: "ニックネームは全角10文字以内で入力してください" }, { status: 400 });
+  }
+
+  // instrumentIds validation
+  if (!Array.isArray(instrumentIds) || !instrumentIds.every((id) => typeof id === "string")) {
+    return Response.json({ error: "instrumentIds は文字列の配列で指定してください" }, { status: 400 });
+  }
+
+  if (instrumentIds.length > 0) {
+    const count = await prisma.instrument.count({ where: { id: { in: instrumentIds } } });
+    if (count !== instrumentIds.length) {
+      return Response.json({ error: "存在しない楽器IDが含まれています" }, { status: 400 });
+    }
+  }
+
+  const sub = session.user.sub;
+
+  const user = await prisma.$transaction(async (tx) => {
+    await tx.userInstrument.deleteMany({ where: { userSub: sub } });
+    if (instrumentIds.length > 0) {
+      await tx.userInstrument.createMany({
+        data: instrumentIds.map((id: string) => ({ userSub: sub, instrumentId: id })),
+      });
+    }
+    return tx.user.update({
+      where: { sub },
+      data: { nickname: trimmed },
+      include: userInclude,
+    });
   });
 
   return Response.json(serializeUser(user));

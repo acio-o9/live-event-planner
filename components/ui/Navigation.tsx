@@ -8,6 +8,7 @@ const links = [
   { href: "/live-events", label: "ライブイベント" },
   { href: "/bands", label: "バンド" },
   { href: "/calendar", label: "カレンダー" },
+  { href: "/members", label: "メンバー" },
 ];
 
 export function Navigation() {
