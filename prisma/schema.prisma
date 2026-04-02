@@ -19,6 +19,24 @@ model User {
   assignedTasks     Task[]         @relation("AssignedTasks")
   paidExpenses      Expense[]
   createdSchedules  BandSchedule[]
+  instruments       UserInstrument[]
+}
+
+model Instrument {
+  id    String           @id @default(uuid())
+  name  String           @unique
+  order Int              @default(0)
+  users UserInstrument[]
+}
+
+model UserInstrument {
+  userSub      String
+  instrumentId String
+
+  user       User       @relation(fields: [userSub], references: [sub], onDelete: Cascade)
+  instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
+
+  @@id([userSub, instrumentId])
 }
 
 model Band {

@@ -1,11 +1,14 @@
 import { requireSession } from "@/lib/api/session";
 import { prisma } from "@/lib/prisma";
-import { serializeUser } from "@/lib/db/serializers";
+import { serializeUser, userInclude } from "@/lib/db/serializers";
 
 export async function GET() {
   const { error } = await requireSession();
   if (error) return error;
 
-  const users = await prisma.user.findMany({ orderBy: { nickname: "asc" } });
+  const users = await prisma.user.findMany({
+    orderBy: { nickname: "asc" },
+    include: userInclude,
+  });
   return Response.json(users.map(serializeUser));
 }

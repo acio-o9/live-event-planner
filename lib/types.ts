@@ -7,7 +7,19 @@ export interface User {
   sub: string;
   nickname: string;
   avatarUrl?: string;
+  instruments: Instrument[];
   createdAt: string;
+}
+
+export interface Instrument {
+  id: string;
+  name: string;
+  order: number;
+}
+
+export interface ProfileUpdateFormData {
+  nickname: string;
+  instrumentIds: string[];
 }
 
 // ============================================================

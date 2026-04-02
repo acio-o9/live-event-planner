@@ -21,6 +21,7 @@ describe("ドメインモデル型定義", () => {
       const user: User = {
         sub: "google-sub-12345",
         nickname: "テストユーザー",
+        instruments: [],
         createdAt: new Date().toISOString(),
       };
       expect(user.sub).toBe("google-sub-12345");
@@ -33,6 +34,7 @@ describe("ドメインモデル型定義", () => {
         sub: "sub-1",
         nickname: "Alice",
         avatarUrl: "https://example.com/avatar.jpg",
+        instruments: [],
         createdAt: new Date().toISOString(),
       };
       expect(userWithAvatar.avatarUrl).toBeDefined();

@@ -1,5 +1,6 @@
 import type {
   User,
+  Instrument,
   Band,
   BandMember,
   LiveEvent,
@@ -17,8 +18,12 @@ import type {
 // Prisma include presets (reuse in route files)
 // ---------------------------------------------------------------------------
 
+export const userInclude = {
+  instruments: { include: { instrument: true } },
+} as const;
+
 export const bandInclude = {
-  members: { include: { user: true } },
+  members: { include: { user: { include: userInclude } } },
 } as const;
 
 export const liveEventBandInclude = {
@@ -36,11 +41,22 @@ export const liveEventInclude = {
 // Local Prisma payload shapes (avoids importing full Prisma namespace)
 // ---------------------------------------------------------------------------
 
+type PrismaInstrument = {
+  id: string;
+  name: string;
+  order: number;
+};
+
+type PrismaUserInstrument = {
+  instrument: PrismaInstrument;
+};
+
 type PrismaUser = {
   sub: string;
   nickname: string;
   avatarUrl: string | null;
   createdAt: Date;
+  instruments?: PrismaUserInstrument[];
 };
 
 type PrismaBandMember = {
@@ -129,11 +145,18 @@ type PrismaLiveEvent = {
 // Serializers
 // ---------------------------------------------------------------------------
 
+export function serializeInstrument(i: PrismaInstrument): Instrument {
+  return { id: i.id, name: i.name, order: i.order };
+}
+
 export function serializeUser(u: PrismaUser): User {
   return {
     sub: u.sub,
     nickname: u.nickname,
     avatarUrl: u.avatarUrl ?? undefined,
+    instruments: (u.instruments ?? [])
+      .map((ui) => serializeInstrument(ui.instrument))
+      .sort((a, b) => a.order - b.order),
     createdAt: u.createdAt.toISOString(),
   };
 }
