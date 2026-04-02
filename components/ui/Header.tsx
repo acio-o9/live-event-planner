@@ -16,7 +16,9 @@ export function Header() {
       <div className="flex items-center gap-4">
         {isAuthenticated && user ? (
           <>
-            <span className="text-sm text-gray-600">{user.nickname}</span>
+            <Link href="/profile" className="text-sm text-gray-600 hover:text-blue-600 hover:underline">
+              {user.nickname}
+            </Link>
             <button
               onClick={signOut}
               className="text-sm text-gray-500 hover:text-gray-700 underline"

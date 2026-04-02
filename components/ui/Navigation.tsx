@@ -9,7 +9,6 @@ const links = [
   { href: "/bands", label: "バンド" },
   { href: "/calendar", label: "カレンダー" },
   { href: "/members", label: "メンバー" },
-  { href: "/profile", label: "プロフィール" },
 ];
 
 export function Navigation() {
