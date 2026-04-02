@@ -16,8 +16,20 @@ export function Header() {
       <div className="flex items-center gap-4">
         {isAuthenticated && user ? (
           <>
-            <Link href="/profile" className="text-sm text-gray-600 hover:text-blue-600 hover:underline">
-              {user.nickname}
+            <Link href="/profile" className="flex items-center gap-2 hover:opacity-80">
+              {user.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={user.avatarUrl}
+                  alt={user.nickname}
+                  className="w-7 h-7 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium text-gray-600">
+                  {user.nickname.charAt(0)}
+                </div>
+              )}
+              <span className="text-sm text-gray-600">{user.nickname}</span>
             </Link>
             <button
               onClick={signOut}
