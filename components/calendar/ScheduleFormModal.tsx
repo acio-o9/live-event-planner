@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import type { Band, CreateBandScheduleRequest } from "@/lib/types";
+import type { EventBand, CreateBandScheduleRequest } from "@/lib/types";
 
 interface Props {
   date: Date;
-  userBands: Band[];
+  userBands: EventBand[];
   onSubmit: (data: CreateBandScheduleRequest) => Promise<void>;
   onClose: () => void;
 }
@@ -21,7 +21,7 @@ export function ScheduleFormModal({ date, userBands, onSubmit, onClose }: Props)
   const defaultEnd = new Date(date);
   defaultEnd.setHours(16, 0, 0, 0);
 
-  const [bandId, setBandId] = useState(userBands[0]?.id ?? "");
+  const [eventBandId, setEventBandId] = useState(userBands[0]?.id ?? "");
   const [location, setLocation] = useState("");
   const [startAt, setStartAt] = useState(toLocalDatetimeValue(defaultStart));
   const [endAt, setEndAt] = useState(toLocalDatetimeValue(defaultEnd));
@@ -40,7 +40,7 @@ export function ScheduleFormModal({ date, userBands, onSubmit, onClose }: Props)
     setIsSubmitting(true);
     try {
       await onSubmit({
-        bandId,
+        eventBandId,
         location,
         startAt: new Date(startAt).toISOString(),
         endAt: new Date(endAt).toISOString(),
@@ -61,8 +61,8 @@ export function ScheduleFormModal({ date, userBands, onSubmit, onClose }: Props)
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">バンド</label>
             <select
-              value={bandId}
-              onChange={(e) => setBandId(e.target.value)}
+              value={eventBandId}
+              onChange={(e) => setEventBandId(e.target.value)}
               required
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
             >

@@ -7,7 +7,7 @@ import {
   CreateLiveEventRequest,
   UpdateLiveEventRequest,
   UpdateMilestoneRequest,
-  AddLiveEventBandRequest,
+  CreateEventBandRequest,
 } from "@/lib/types";
 
 export function useLiveEvents() {
@@ -61,7 +61,7 @@ export function useLiveEvents() {
     []
   );
 
-  const addBand = useCallback(async (id: string, data: AddLiveEventBandRequest) => {
+  const addBand = useCallback(async (id: string, data: CreateEventBandRequest) => {
     const liveEventBand = await liveEventsApi.addBand(id, data);
     setLiveEvents((prev) =>
       prev.map((e) =>
@@ -71,12 +71,12 @@ export function useLiveEvents() {
     return liveEventBand;
   }, []);
 
-  const removeBand = useCallback(async (id: string, liveEventBandId: string) => {
-    await liveEventsApi.removeBand(id, liveEventBandId);
+  const removeBand = useCallback(async (id: string, eventBandId: string) => {
+    await liveEventsApi.removeBand(id, eventBandId);
     setLiveEvents((prev) =>
       prev.map((e) =>
         e.id === id
-          ? { ...e, bands: e.bands.filter((b) => b.id !== liveEventBandId) }
+          ? { ...e, bands: e.bands.filter((b) => b.id !== eventBandId) }
           : e
       )
     );

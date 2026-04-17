@@ -17,9 +17,9 @@ const base = (liveEventId: string, milestoneId: string) =>
   `/api/live-events/${liveEventId}/milestones/${milestoneId}/tasks`;
 
 export const tasksApi = {
-  list: (liveEventId: string, milestoneId: string, liveEventBandId?: string) => {
+  list: (liveEventId: string, milestoneId: string, eventBandId?: string) => {
     const url = new URL(base(liveEventId, milestoneId), window.location.origin);
-    if (liveEventBandId) url.searchParams.set("liveEventBandId", liveEventBandId);
+    if (eventBandId) url.searchParams.set("eventBandId", eventBandId);
     return fetchJson<Task[]>(url.pathname + url.search);
   },
 

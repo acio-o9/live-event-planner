@@ -17,7 +17,7 @@ export async function GET(
       bands: {
         include: {
           snapshots: true,
-          band: { include: { members: { include: { user: true } } } },
+          members: { include: { user: true } },
         },
       },
     },
@@ -32,7 +32,7 @@ export async function GET(
         participantMap.set(snap.userSub, snap.nickname);
       }
     } else {
-      for (const member of band.band.members) {
+      for (const member of band.members) {
         participantMap.set(member.userSub, member.user.nickname);
       }
     }

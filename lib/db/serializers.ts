@@ -1,10 +1,9 @@
 import type {
   User,
   Instrument,
-  Band,
-  BandMember,
+  EventBand,
+  EventBandMember,
   LiveEvent,
-  LiveEventBand,
   MemberSnapshot,
   Milestone,
   Task,
@@ -22,18 +21,14 @@ export const userInclude = {
   instruments: { include: { instrument: true } },
 } as const;
 
-export const bandInclude = {
+export const eventBandInclude = {
   members: { include: { user: { include: userInclude } } },
-} as const;
-
-export const liveEventBandInclude = {
-  band: { include: { members: { include: { user: true } } } },
   snapshots: true,
   setlist: { include: { songs: true } },
 } as const;
 
 export const liveEventInclude = {
-  bands: { include: liveEventBandInclude },
+  bands: { include: eventBandInclude },
   milestones: { include: { tasks: true } },
 } as const;
 
@@ -59,27 +54,18 @@ type PrismaUser = {
   instruments?: PrismaUserInstrument[];
 };
 
-type PrismaBandMember = {
-  bandId: string;
+type PrismaEventBandMember = {
+  eventBandId: string;
   userSub: string;
   role: string;
   joinedAt: Date;
   user: PrismaUser;
 };
 
-type PrismaBand = {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  members: PrismaBandMember[];
-};
-
 type PrismaTask = {
   id: string;
   milestoneId: string;
-  liveEventBandId: string | null;
+  eventBandId: string | null;
   title: string;
   assigneeUserSub: string | null;
   status: string;
@@ -105,7 +91,7 @@ type PrismaSetlistSong = {
 
 type PrismaSetlist = {
   id: string;
-  liveEventBandId: string;
+  eventBandId: string;
   updatedAt: Date;
   songs: PrismaSetlistSong[];
 };
@@ -114,14 +100,15 @@ type PrismaMemberSnapshot = {
   userSub: string;
   nickname: string;
   role: string;
+  takenAt: Date;
 };
 
-type PrismaLiveEventBand = {
+type PrismaEventBand = {
   id: string;
   liveEventId: string;
-  bandId: string;
-  snapshotTakenAt: Date | null;
-  band: PrismaBand;
+  name: string;
+  description: string | null;
+  members: PrismaEventBandMember[];
   snapshots: PrismaMemberSnapshot[];
   setlist: PrismaSetlist | null;
 };
@@ -137,7 +124,7 @@ type PrismaLiveEvent = {
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;
-  bands: PrismaLiveEventBand[];
+  bands: PrismaEventBand[];
   milestones: PrismaMilestone[];
 };
 
@@ -161,23 +148,12 @@ export function serializeUser(u: PrismaUser): User {
   };
 }
 
-export function serializeBandMember(m: PrismaBandMember): BandMember {
+export function serializeEventBandMember(m: PrismaEventBandMember): EventBandMember {
   return {
     userSub: m.userSub,
     user: serializeUser(m.user),
-    role: m.role as BandMember["role"],
+    role: m.role as EventBandMember["role"],
     joinedAt: m.joinedAt.toISOString(),
-  };
-}
-
-export function serializeBand(b: PrismaBand): Band {
-  return {
-    id: b.id,
-    name: b.name,
-    description: b.description ?? undefined,
-    members: b.members.map(serializeBandMember),
-    createdAt: b.createdAt.toISOString(),
-    updatedAt: b.updatedAt.toISOString(),
   };
 }
 
@@ -185,7 +161,7 @@ export function serializeTask(t: PrismaTask): Task {
   return {
     id: t.id,
     milestoneId: t.milestoneId,
-    liveEventBandId: t.liveEventBandId ?? undefined,
+    eventBandId: t.eventBandId ?? undefined,
     title: t.title,
     assigneeUserSub: t.assigneeUserSub ?? undefined,
     status: t.status as Task["status"],
@@ -217,7 +193,7 @@ export function serializeSetlistSong(s: PrismaSetlistSong): SetlistSong {
 export function serializeSetlist(s: PrismaSetlist): Setlist {
   return {
     id: s.id,
-    liveEventBandId: s.liveEventBandId,
+    eventBandId: s.eventBandId,
     songs: s.songs.map(serializeSetlistSong),
     updatedAt: s.updatedAt.toISOString(),
   };
@@ -231,16 +207,23 @@ export function serializeMemberSnapshot(s: PrismaMemberSnapshot): MemberSnapshot
   };
 }
 
-export function serializeLiveEventBand(b: PrismaLiveEventBand): LiveEventBand {
+export function serializeEventBand(b: PrismaEventBand): EventBand {
+  const snapshotTakenAt = b.snapshots.length > 0
+    ? b.snapshots.reduce((earliest, s) =>
+        s.takenAt < earliest ? s.takenAt : earliest,
+        b.snapshots[0].takenAt
+      ).toISOString()
+    : undefined;
+
   return {
     id: b.id,
     liveEventId: b.liveEventId,
-    bandId: b.bandId,
-    band: serializeBand(b.band),
+    name: b.name,
+    description: b.description ?? undefined,
+    members: b.members.map(serializeEventBandMember),
     memberSnapshot: b.snapshots.map(serializeMemberSnapshot),
-    // setlist is always created together with LiveEventBand
     setlist: serializeSetlist(b.setlist!),
-    snapshotTakenAt: b.snapshotTakenAt?.toISOString() ?? undefined,
+    snapshotTakenAt,
   };
 }
 
@@ -272,21 +255,21 @@ export function serializeExpense(e: PrismaExpense): Expense {
 
 type PrismaBandSchedule = {
   id: string;
-  bandId: string;
+  eventBandId: string;
   location: string;
   startAt: Date;
   endAt: Date;
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;
-  band: { name: string };
+  eventBand: { name: string };
 };
 
 export function serializeBandSchedule(s: PrismaBandSchedule): BandSchedule {
   return {
     id: s.id,
-    bandId: s.bandId,
-    bandName: s.band.name,
+    eventBandId: s.eventBandId,
+    bandName: s.eventBand.name,
     location: s.location,
     startAt: s.startAt.toISOString(),
     endAt: s.endAt.toISOString(),
@@ -308,7 +291,7 @@ export function serializeLiveEvent(e: PrismaLiveEvent): LiveEvent {
     createdBy: e.createdBy,
     createdAt: e.createdAt.toISOString(),
     updatedAt: e.updatedAt.toISOString(),
-    bands: e.bands.map(serializeLiveEventBand),
+    bands: e.bands.map(serializeEventBand),
     milestones: e.milestones
       .sort((a, b) => a.order - b.order)
       .map((m) => ({

@@ -28,7 +28,7 @@ function ExpensesPage() {
             participantMap.set(snap.userSub, snap.nickname);
           }
         } else {
-          for (const member of band.band.members) {
+          for (const member of band.members) {
             participantMap.set(member.userSub, member.user.nickname);
           }
         }

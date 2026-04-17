@@ -10,31 +10,26 @@ export async function POST(
   const { error } = await requireSession();
   if (error) return error;
 
-  const leb = await prisma.liveEventBand.findUnique({
+  const eventBand = await prisma.eventBand.findUnique({
     where: { id: params.liveEventBandId },
     include: {
-      band: { include: { members: { include: { user: true } } } },
+      members: { include: { user: true } },
       snapshots: true,
     },
   });
-  if (!leb || leb.liveEventId !== params.id) {
-    return Response.json({ error: "Band participation not found" }, { status: 404 });
+  if (!eventBand || eventBand.liveEventId !== params.id) {
+    return Response.json({ error: "Band not found" }, { status: 404 });
   }
 
-  if (leb.snapshotTakenAt) {
+  if (eventBand.snapshots.length > 0) {
     return Response.json({ error: "Snapshot already taken" }, { status: 409 });
   }
 
   const now = new Date();
   const snapshots = await prisma.$transaction(async (tx) => {
-    await tx.liveEventBand.update({
-      where: { id: params.liveEventBandId },
-      data: { snapshotTakenAt: now },
-    });
-
-    const created = await tx.memberSnapshot.createMany({
-      data: leb.band.members.map((m) => ({
-        liveEventBandId: params.liveEventBandId,
+    await tx.memberSnapshot.createMany({
+      data: eventBand.members.map((m) => ({
+        eventBandId: params.liveEventBandId,
         userSub: m.userSub,
         nickname: m.user.nickname,
         role: m.role,
@@ -42,7 +37,7 @@ export async function POST(
     });
 
     return tx.memberSnapshot.findMany({
-      where: { liveEventBandId: params.liveEventBandId },
+      where: { eventBandId: params.liveEventBandId },
     });
   });
 

@@ -48,7 +48,7 @@ describe("buildCalendarDays", () => {
 function makeSchedule(startAt: string): BandSchedule {
   return {
     id: "s1",
-    bandId: "b1",
+    eventBandId: "eb1",
     bandName: "Test Band",
     location: "Studio",
     startAt,

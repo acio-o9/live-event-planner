@@ -8,10 +8,10 @@ interface Props {
   liveEventId: string;
   milestoneId: string;
   initialTasks: Task[];
-  liveEventBandId?: string;
+  eventBandId?: string;
 }
 
-export function TaskList({ liveEventId, milestoneId, initialTasks, liveEventBandId }: Props) {
+export function TaskList({ liveEventId, milestoneId, initialTasks, eventBandId }: Props) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [newTitle, setNewTitle] = useState("");
   const [isAdding, setIsAdding] = useState(false);
@@ -29,7 +29,7 @@ export function TaskList({ liveEventId, milestoneId, initialTasks, liveEventBand
     if (!newTitle.trim()) return;
     const task = await tasksApi.create(liveEventId, milestoneId, {
       title: newTitle.trim(),
-      liveEventBandId,
+      eventBandId,
     });
     setTasks((prev) => [...prev, task]);
     setNewTitle("");
@@ -41,9 +41,9 @@ export function TaskList({ liveEventId, milestoneId, initialTasks, liveEventBand
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
   };
 
-  const visibleTasks = liveEventBandId
-    ? tasks.filter((t) => !t.liveEventBandId || t.liveEventBandId === liveEventBandId)
-    : tasks.filter((t) => !t.liveEventBandId);
+  const visibleTasks = eventBandId
+    ? tasks.filter((t) => !t.eventBandId || t.eventBandId === eventBandId)
+    : tasks.filter((t) => !t.eventBandId);
 
   return (
     <div className="space-y-1">

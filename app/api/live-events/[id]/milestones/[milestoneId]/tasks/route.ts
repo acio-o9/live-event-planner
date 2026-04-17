@@ -20,12 +20,12 @@ export async function GET(
   }
 
   const { searchParams } = new URL(request.url);
-  const liveEventBandId = searchParams.get("liveEventBandId");
+  const eventBandId = searchParams.get("eventBandId");
 
   const tasks = await prisma.task.findMany({
     where: {
       milestoneId: params.milestoneId,
-      ...(liveEventBandId ? { liveEventBandId } : {}),
+      ...(eventBandId ? { eventBandId } : {}),
     },
     orderBy: { order: "asc" },
   });
@@ -57,7 +57,7 @@ export async function POST(
   const task = await prisma.task.create({
     data: {
       milestoneId: params.milestoneId,
-      liveEventBandId: body.liveEventBandId ?? null,
+      eventBandId: body.eventBandId ?? null,
       title: body.title.trim(),
       assigneeUserSub: body.assigneeUserSub ?? null,
       status: "pending",

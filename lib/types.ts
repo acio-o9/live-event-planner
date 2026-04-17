@@ -23,26 +23,6 @@ export interface ProfileUpdateFormData {
 }
 
 // ============================================================
-// Band
-// ============================================================
-
-export interface Band {
-  id: string;
-  name: string;
-  description?: string;
-  members: BandMember[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface BandMember {
-  userSub: string; // User.sub への参照
-  user: User;
-  role: "leader" | "member";
-  joinedAt: string;
-}
-
-// ============================================================
 // Live Event
 // ============================================================
 
@@ -53,7 +33,7 @@ export interface LiveEvent {
   date?: string; // 開催予定日（未定の場合はundefined）
   venue?: string;
   photoAlbumUrl?: string; // Google フォトアルバムURL
-  bands: LiveEventBand[];
+  bands: EventBand[];
   milestones: Milestone[];
   status: "planning" | "confirmed" | "completed" | "cancelled";
   createdBy: string; // User.sub
@@ -61,15 +41,23 @@ export interface LiveEvent {
   updatedAt: string;
 }
 
-// ライブ×バンドの参加記録（中間エンティティ）
-export interface LiveEventBand {
+// イベント専属バンド
+export interface EventBand {
   id: string;
   liveEventId: string;
-  bandId: string;
-  band: Band; // 現在のバンド情報（表示用参照）
+  name: string;
+  description?: string;
+  members: EventBandMember[];
   memberSnapshot: MemberSnapshot[]; // 参加確定時点のメンバースナップショット
   setlist: Setlist;
   snapshotTakenAt?: string; // スナップショット取得日時（未確定の場合はundefined）
+}
+
+export interface EventBandMember {
+  userSub: string; // User.sub への参照
+  user: User;
+  role: "leader" | "member";
+  joinedAt: string;
 }
 
 // メンバースナップショット（参加確定時点の記録）
@@ -96,7 +84,7 @@ export interface Milestone {
 export interface Task {
   id: string;
   milestoneId: string;
-  liveEventBandId?: string; // undefinedならライブ全体タスク、あればバンド個別タスク
+  eventBandId?: string; // undefinedならライブ全体タスク、あればバンド個別タスク
   title: string;
   assigneeUserSub?: string; // 担当者（User.sub）。未アサインも可
   status: "pending" | "in_progress" | "completed";
@@ -109,7 +97,7 @@ export interface Task {
 
 export interface Setlist {
   id: string;
-  liveEventBandId: string; // LiveEventBand.id への参照
+  eventBandId: string; // EventBand.id への参照
   songs: SetlistSong[];
   updatedAt: string;
 }
@@ -152,19 +140,19 @@ export interface TaskTemplate {
 // API Request / Response Types
 // ============================================================
 
-// --- Band ---
+// --- EventBand ---
 
-export interface CreateBandRequest {
+export interface CreateEventBandRequest {
   name: string;
   description?: string;
 }
 
-export interface UpdateBandRequest {
+export interface UpdateEventBandRequest {
   name?: string;
   description?: string;
 }
 
-export interface AddBandMemberRequest {
+export interface AddEventBandMemberRequest {
   userSub: string;
   role: "leader" | "member";
 }
@@ -193,17 +181,11 @@ export interface UpdateMilestoneRequest {
   status?: Milestone["status"];
 }
 
-// --- LiveEventBand ---
-
-export interface AddLiveEventBandRequest {
-  bandId: string;
-}
-
 // --- Task ---
 
 export interface CreateTaskRequest {
   title: string;
-  liveEventBandId?: string;
+  eventBandId?: string;
   assigneeUserSub?: string;
 }
 
@@ -270,7 +252,7 @@ export interface UpdateExpenseRequest {
 
 export interface BandSchedule {
   id: string;
-  bandId: string;
+  eventBandId: string;
   bandName: string;
   location: string;
   startAt: string;  // ISO8601
@@ -281,11 +263,12 @@ export interface BandSchedule {
 }
 
 export interface CreateBandScheduleRequest {
-  bandId: string;
+  eventBandId: string;
   location: string;
   startAt: string;
   endAt: string;
 }
+
 
 // --- API Error ---
 

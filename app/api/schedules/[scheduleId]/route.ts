@@ -15,8 +15,8 @@ export async function DELETE(
   if (!schedule) return Response.json({ error: "Not Found" }, { status: 404 });
 
   // バンドメンバーシップ確認
-  const membership = await prisma.bandMember.findUnique({
-    where: { bandId_userSub: { bandId: schedule.bandId, userSub: session.user.sub } },
+  const membership = await prisma.eventBandMember.findUnique({
+    where: { eventBandId_userSub: { eventBandId: schedule.eventBandId, userSub: session.user.sub } },
   });
   if (!membership) {
     return Response.json({ error: "Forbidden" }, { status: 403 });

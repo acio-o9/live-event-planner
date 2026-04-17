@@ -13,13 +13,13 @@ model User {
   avatarUrl String?
   createdAt DateTime @default(now())
 
-  createdBands      Band[]
-  createdEvents     LiveEvent[]
-  bandMemberships   BandMember[]
-  assignedTasks     Task[]         @relation("AssignedTasks")
-  paidExpenses      Expense[]
-  createdSchedules  BandSchedule[]
-  instruments       UserInstrument[]
+  createdEvents        LiveEvent[]
+  createdEventBands    EventBand[]
+  eventBandMemberships EventBandMember[]
+  assignedTasks        Task[]            @relation("AssignedTasks")
+  paidExpenses         Expense[]
+  createdSchedules     BandSchedule[]
+  instruments          UserInstrument[]
 }
 
 model Instrument {
@@ -39,32 +39,6 @@ model UserInstrument {
   @@id([userSub, instrumentId])
 }
 
-model Band {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  createdBy   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  creator    User            @relation(fields: [createdBy], references: [sub])
-  members    BandMember[]
-  eventBands LiveEventBand[]
-  schedules  BandSchedule[]
-}
-
-model BandMember {
-  bandId   String
-  userSub  String
-  role     String   @default("member")
-  joinedAt DateTime @default(now())
-
-  band Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userSub], references: [sub])
-
-  @@id([bandId, userSub])
-}
-
 model LiveEvent {
   id            String    @id @default(uuid())
   title         String
@@ -77,51 +51,65 @@ model LiveEvent {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  creator    User            @relation(fields: [createdBy], references: [sub])
-  bands      LiveEventBand[]
+  creator    User         @relation(fields: [createdBy], references: [sub])
+  bands      EventBand[]
   milestones Milestone[]
   expenses   Expense[]
 }
 
-model Expense {
+model EventBand {
   id          String   @id @default(uuid())
   liveEventId String
-  paidBy      String
-  amount      Int
-  category    String   @default("その他")
-  description String   @default("")
+  name        String
+  description String?
+  createdBy   String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  liveEvent  LiveEvent @relation(fields: [liveEventId], references: [id], onDelete: Cascade)
-  paidByUser User      @relation(fields: [paidBy], references: [sub])
+  liveEvent       LiveEvent         @relation(fields: [liveEventId], references: [id], onDelete: Cascade)
+  creator         User              @relation(fields: [createdBy], references: [sub])
+  members         EventBandMember[]
+  snapshots       MemberSnapshot[]
+  setlist         Setlist?
+  tasks           Task[]
+  schedules       BandSchedule[]
 }
 
-model LiveEventBand {
-  id              String    @id @default(uuid())
-  liveEventId     String
-  bandId          String
-  snapshotTakenAt DateTime?
-  createdAt       DateTime  @default(now())
+model EventBandMember {
+  eventBandId String
+  userSub     String
+  role        String   @default("member")
+  joinedAt    DateTime @default(now())
 
-  liveEvent LiveEvent        @relation(fields: [liveEventId], references: [id], onDelete: Cascade)
-  band      Band             @relation(fields: [bandId], references: [id])
-  snapshots MemberSnapshot[]
-  setlist   Setlist?
-  tasks     Task[]
+  eventBand EventBand @relation(fields: [eventBandId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userSub], references: [sub])
 
-  @@unique([liveEventId, bandId])
+  @@id([eventBandId, userSub])
+}
+
+model BandSchedule {
+  id          String   @id @default(uuid())
+  eventBandId String
+  location    String
+  startAt     DateTime
+  endAt       DateTime
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  eventBand EventBand @relation(fields: [eventBandId], references: [id], onDelete: Cascade)
+  creator   User      @relation(fields: [createdBy], references: [sub])
 }
 
 model MemberSnapshot {
-  id              String   @id @default(uuid())
-  liveEventBandId String
-  userSub         String
-  nickname        String
-  role            String
-  takenAt         DateTime @default(now())
+  id          String   @id @default(uuid())
+  eventBandId String
+  userSub     String
+  nickname    String
+  role        String
+  takenAt     DateTime @default(now())
 
-  liveEventBand LiveEventBand @relation(fields: [liveEventBandId], references: [id], onDelete: Cascade)
+  eventBand EventBand @relation(fields: [eventBandId], references: [id], onDelete: Cascade)
 }
 
 model Milestone {
@@ -140,7 +128,7 @@ model Milestone {
 model Task {
   id              String   @id @default(uuid())
   milestoneId     String
-  liveEventBandId String?
+  eventBandId     String?
   title           String
   assigneeUserSub String?
   status          String   @default("pending")
@@ -148,32 +136,18 @@ model Task {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  milestone     Milestone      @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
-  liveEventBand LiveEventBand? @relation(fields: [liveEventBandId], references: [id], onDelete: Cascade)
-  assignee      User?          @relation("AssignedTasks", fields: [assigneeUserSub], references: [sub])
+  milestone   Milestone  @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  eventBand   EventBand? @relation(fields: [eventBandId], references: [id], onDelete: SetNull)
+  assignee    User?      @relation("AssignedTasks", fields: [assigneeUserSub], references: [sub])
 }
 
 model Setlist {
-  id              String   @id @default(uuid())
-  liveEventBandId String   @unique
-  updatedAt       DateTime @updatedAt
+  id          String   @id @default(uuid())
+  eventBandId String   @unique
+  updatedAt   DateTime @updatedAt
 
-  liveEventBand LiveEventBand @relation(fields: [liveEventBandId], references: [id], onDelete: Cascade)
-  songs         SetlistSong[]
-}
-
-model BandSchedule {
-  id        String   @id @default(uuid())
-  bandId    String
-  location  String
-  startAt   DateTime
-  endAt     DateTime
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  band    Band @relation(fields: [bandId], references: [id], onDelete: Cascade)
-  creator User @relation(fields: [createdBy], references: [sub])
+  eventBand EventBand   @relation(fields: [eventBandId], references: [id], onDelete: Cascade)
+  songs     SetlistSong[]
 }
 
 model SetlistSong {
@@ -185,4 +159,18 @@ model SetlistSong {
   note      String?
 
   setlist Setlist @relation(fields: [setlistId], references: [id], onDelete: Cascade)
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  liveEventId String
+  paidBy      String
+  amount      Int
+  category    String   @default("その他")
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  liveEvent  LiveEvent @relation(fields: [liveEventId], references: [id], onDelete: Cascade)
+  paidByUser User      @relation(fields: [paidBy], references: [sub])
 }

@@ -1,8 +1,8 @@
 import {
-  Band,
-  CreateBandRequest,
-  UpdateBandRequest,
-  AddBandMemberRequest,
+  EventBand,
+  CreateEventBandRequest,
+  UpdateEventBandRequest,
+  AddEventBandMemberRequest,
 } from "@/lib/types";
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
@@ -17,31 +17,35 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   return res.json();
 }
 
+const base = (liveEventId: string) => `/api/live-events/${liveEventId}/bands`;
+
 export const bandsApi = {
-  list: () => fetchJson<Band[]>("/api/bands"),
-
-  get: (id: string) => fetchJson<Band>(`/api/bands/${id}`),
-
-  create: (data: CreateBandRequest) =>
-    fetchJson<Band>("/api/bands", {
+  create: (liveEventId: string, data: CreateEventBandRequest) =>
+    fetchJson<EventBand>(base(liveEventId), {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
-  update: (id: string, data: UpdateBandRequest) =>
-    fetchJson<Band>(`/api/bands/${id}`, {
+  update: (liveEventId: string, eventBandId: string, data: UpdateEventBandRequest) =>
+    fetchJson<EventBand>(`${base(liveEventId)}/${eventBandId}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
-  addMember: (id: string, data: AddBandMemberRequest) =>
-    fetchJson<Band>(`/api/bands/${id}/members`, {
+  remove: (liveEventId: string, eventBandId: string) =>
+    fetchJson<void>(`${base(liveEventId)}/${eventBandId}`, {
+      method: "DELETE",
+    }),
+
+  addMember: (liveEventId: string, eventBandId: string, data: AddEventBandMemberRequest) =>
+    fetchJson<EventBand>(`${base(liveEventId)}/${eventBandId}/members`, {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
-  removeMember: (id: string, userSub: string) =>
-    fetchJson<Band>(`/api/bands/${id}/members/${encodeURIComponent(userSub)}`, {
-      method: "DELETE",
-    }),
+  removeMember: (liveEventId: string, eventBandId: string, userSub: string) =>
+    fetchJson<EventBand>(
+      `${base(liveEventId)}/${eventBandId}/members/${encodeURIComponent(userSub)}`,
+      { method: "DELETE" }
+    ),
 };

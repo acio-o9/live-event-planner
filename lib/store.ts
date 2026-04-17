@@ -1,7 +1,7 @@
 /**
  * @deprecated Prismaに移行済み。テストファイルのみが参照している。
  */
-import { Band, LiveEvent, User } from "./types";
+import { LiveEvent, User } from "./types";
 
 function createStore<T>() {
   const items = new Map<string, T>();
@@ -15,7 +15,6 @@ function createStore<T>() {
 }
 
 export const users = createStore<User>();
-export const bands = createStore<Band>();
 export const liveEvents = createStore<LiveEvent>();
 
 export function generateId(): string {

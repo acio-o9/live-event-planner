@@ -1,11 +1,13 @@
 import {
   LiveEvent,
   Milestone,
-  LiveEventBand,
+  EventBand,
+  User,
   CreateLiveEventRequest,
   UpdateLiveEventRequest,
   UpdateMilestoneRequest,
-  AddLiveEventBandRequest,
+  CreateEventBandRequest,
+  AddEventBandMemberRequest,
 } from "@/lib/types";
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
@@ -48,21 +50,40 @@ export const liveEventsApi = {
       body: JSON.stringify(data),
     }),
 
-  // Band participation
-  addBand: (id: string, data: AddLiveEventBandRequest) =>
-    fetchJson<LiveEventBand>(`/api/live-events/${id}/bands`, {
+  // Band
+  addBand: (id: string, data: CreateEventBandRequest) =>
+    fetchJson<EventBand>(`/api/live-events/${id}/bands`, {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
-  removeBand: (id: string, liveEventBandId: string) =>
-    fetchJson<void>(`/api/live-events/${id}/bands/${liveEventBandId}`, {
+  updateBand: (id: string, eventBandId: string, data: { name?: string; description?: string }) =>
+    fetchJson<EventBand>(`/api/live-events/${id}/bands/${eventBandId}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  removeBand: (id: string, eventBandId: string) =>
+    fetchJson<void>(`/api/live-events/${id}/bands/${eventBandId}`, {
       method: "DELETE",
     }),
 
-  takeSnapshot: (id: string, liveEventBandId: string) =>
+  addMember: (id: string, eventBandId: string, data: AddEventBandMemberRequest) =>
+    fetchJson<EventBand>(`/api/live-events/${id}/bands/${eventBandId}/members`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  removeMember: (id: string, eventBandId: string, userSub: string) =>
+    fetchJson<EventBand>(`/api/live-events/${id}/bands/${eventBandId}/members/${encodeURIComponent(userSub)}`, {
+      method: "DELETE",
+    }),
+
+  listUsers: () => fetchJson<User[]>("/api/users"),
+
+  takeSnapshot: (id: string, eventBandId: string) =>
     fetchJson<{ snapshot: unknown; snapshotTakenAt: string }>(
-      `/api/live-events/${id}/bands/${liveEventBandId}/snapshot`,
+      `/api/live-events/${id}/bands/${eventBandId}/snapshot`,
       { method: "POST" }
     ),
 };

@@ -7,7 +7,7 @@ import { Task, CreateTaskRequest, UpdateTaskRequest } from "@/lib/types";
 export function useTask(
   liveEventId: string,
   milestoneId: string,
-  liveEventBandId?: string
+  eventBandId?: string
 ) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -17,13 +17,13 @@ export function useTask(
     setIsLoading(true);
     setError(null);
     try {
-      setTasks(await tasksApi.list(liveEventId, milestoneId, liveEventBandId));
+      setTasks(await tasksApi.list(liveEventId, milestoneId, eventBandId));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load tasks");
     } finally {
       setIsLoading(false);
     }
-  }, [liveEventId, milestoneId, liveEventBandId]);
+  }, [liveEventId, milestoneId, eventBandId]);
 
   useEffect(() => { load(); }, [load]);
 

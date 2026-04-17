@@ -51,7 +51,7 @@ export function CalendarCell({
           <ScheduleItem
             key={s.id}
             schedule={s}
-            canDelete={userBandIds.includes(s.bandId)}
+            canDelete={userBandIds.includes(s.eventBandId)}
             onDelete={onDelete}
           />
         ))}

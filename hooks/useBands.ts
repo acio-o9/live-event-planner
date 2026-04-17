@@ -1,51 +1,41 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { bandsApi } from "@/lib/api/bands";
-import { Band, CreateBandRequest, UpdateBandRequest, AddBandMemberRequest } from "@/lib/types";
+import { EventBand, CreateEventBandRequest, UpdateEventBandRequest, AddEventBandMemberRequest } from "@/lib/types";
 
-export function useBands() {
-  const [bands, setBands] = useState<Band[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+export function useBands(liveEventId: string) {
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  const create = useCallback(async (data: CreateEventBandRequest) => {
     setIsLoading(true);
     setError(null);
     try {
-      setBands(await bandsApi.list());
+      return await bandsApi.create(liveEventId, data);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to load bands");
+      setError(e instanceof Error ? e.message : "Failed to create band");
+      throw e;
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [liveEventId]);
 
-  useEffect(() => { load(); }, [load]);
+  const update = useCallback(async (eventBandId: string, data: UpdateEventBandRequest): Promise<EventBand> => {
+    return bandsApi.update(liveEventId, eventBandId, data);
+  }, [liveEventId]);
 
-  const create = useCallback(async (data: CreateBandRequest) => {
-    const band = await bandsApi.create(data);
-    setBands((prev) => [...prev, band]);
-    return band;
-  }, []);
+  const remove = useCallback(async (eventBandId: string) => {
+    await bandsApi.remove(liveEventId, eventBandId);
+  }, [liveEventId]);
 
-  const update = useCallback(async (id: string, data: UpdateBandRequest) => {
-    const band = await bandsApi.update(id, data);
-    setBands((prev) => prev.map((b) => (b.id === id ? band : b)));
-    return band;
-  }, []);
+  const addMember = useCallback(async (eventBandId: string, data: AddEventBandMemberRequest): Promise<EventBand> => {
+    return bandsApi.addMember(liveEventId, eventBandId, data);
+  }, [liveEventId]);
 
-  const addMember = useCallback(async (id: string, data: AddBandMemberRequest) => {
-    const band = await bandsApi.addMember(id, data);
-    setBands((prev) => prev.map((b) => (b.id === id ? band : b)));
-    return band;
-  }, []);
+  const removeMember = useCallback(async (eventBandId: string, userSub: string): Promise<EventBand> => {
+    return bandsApi.removeMember(liveEventId, eventBandId, userSub);
+  }, [liveEventId]);
 
-  const removeMember = useCallback(async (id: string, userSub: string) => {
-    const band = await bandsApi.removeMember(id, userSub);
-    setBands((prev) => prev.map((b) => (b.id === id ? band : b)));
-    return band;
-  }, []);
-
-  return { bands, isLoading, error, create, update, addMember, removeMember, reload: load };
+  return { isLoading, error, create, update, remove, addMember, removeMember };
 }

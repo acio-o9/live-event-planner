@@ -4,10 +4,8 @@
  */
 import {
   User,
-  Band,
-  BandMember,
+  EventBand,
   LiveEvent,
-  LiveEventBand,
   MemberSnapshot,
   Milestone,
   Task,
@@ -69,15 +67,15 @@ describe("ドメインモデル型定義", () => {
     });
   });
 
-  describe("LiveEventBand（スナップショットパターン）", () => {
+  describe("EventBand（スナップショットパターン）", () => {
     it("snapshotTakenAt はオプショナル（確定前はundefined）", () => {
-      const liveEventBand: Partial<LiveEventBand> = {
-        id: "leb-1",
+      const eventBand: Partial<EventBand> = {
+        id: "eb-1",
         liveEventId: "event-1",
-        bandId: "band-1",
+        name: "テストバンド",
         memberSnapshot: [],
       };
-      expect(liveEventBand.snapshotTakenAt).toBeUndefined();
+      expect(eventBand.snapshotTakenAt).toBeUndefined();
     });
 
     it("MemberSnapshot は userSub・nickname・role を持つ", () => {
@@ -103,7 +101,7 @@ describe("ドメインモデル型定義", () => {
       expect(milestone.dueDate).toBeUndefined();
     });
 
-    it("Task.liveEventBandId がundefinedの場合はライブ全体タスク", () => {
+    it("Task.eventBandId がundefinedの場合はライブ全体タスク", () => {
       const eventTask: Task = {
         id: "task-1",
         milestoneId: "ms-1",
@@ -111,19 +109,19 @@ describe("ドメインモデル型定義", () => {
         status: "pending",
         order: 1,
       };
-      expect(eventTask.liveEventBandId).toBeUndefined();
+      expect(eventTask.eventBandId).toBeUndefined();
     });
 
-    it("Task.liveEventBandId が指定されている場合はバンド個別タスク", () => {
+    it("Task.eventBandId が指定されている場合はバンド個別タスク", () => {
       const bandTask: Task = {
         id: "task-2",
         milestoneId: "ms-1",
-        liveEventBandId: "leb-1",
+        eventBandId: "eb-1",
         title: "PA表提出",
         status: "pending",
         order: 1,
       };
-      expect(bandTask.liveEventBandId).toBe("leb-1");
+      expect(bandTask.eventBandId).toBe("eb-1");
     });
 
     it("Task.assigneeUserSub はオプショナル（未アサイン可）", () => {
@@ -139,14 +137,14 @@ describe("ドメインモデル型定義", () => {
   });
 
   describe("Setlist", () => {
-    it("liveEventBandId で LiveEventBand に紐付く", () => {
+    it("eventBandId で EventBand に紐付く", () => {
       const setlist: Setlist = {
         id: "setlist-1",
-        liveEventBandId: "leb-1",
+        eventBandId: "eb-1",
         songs: [],
         updatedAt: new Date().toISOString(),
       };
-      expect(setlist.liveEventBandId).toBe("leb-1");
+      expect(setlist.eventBandId).toBe("eb-1");
     });
 
     it("SetlistSong.duration と note はオプショナル", () => {

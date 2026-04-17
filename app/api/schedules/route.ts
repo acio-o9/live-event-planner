@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     where: {
       startAt: { gte: from, lte: to },
     },
-    include: { band: { select: { name: true } } },
+    include: { eventBand: { select: { name: true } } },
     orderBy: { startAt: "asc" },
   });
 
@@ -35,9 +35,9 @@ export async function POST(request: NextRequest) {
   if (error) return error;
 
   const body = await request.json();
-  const { bandId, location, startAt, endAt } = body;
+  const { eventBandId, location, startAt, endAt } = body;
 
-  if (!bandId) return Response.json({ error: "bandId is required" }, { status: 400 });
+  if (!eventBandId) return Response.json({ error: "eventBandId is required" }, { status: 400 });
   if (!location) return Response.json({ error: "location is required" }, { status: 400 });
   if (!startAt) return Response.json({ error: "startAt is required" }, { status: 400 });
   if (!endAt) return Response.json({ error: "endAt is required" }, { status: 400 });
@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
   }
 
   // バンドメンバーシップ確認
-  const membership = await prisma.bandMember.findUnique({
-    where: { bandId_userSub: { bandId, userSub: session.user.sub } },
+  const membership = await prisma.eventBandMember.findUnique({
+    where: { eventBandId_userSub: { eventBandId, userSub: session.user.sub } },
   });
   if (!membership) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
@@ -55,13 +55,13 @@ export async function POST(request: NextRequest) {
 
   const schedule = await prisma.bandSchedule.create({
     data: {
-      bandId,
+      eventBandId,
       location,
       startAt: new Date(startAt),
       endAt: new Date(endAt),
       createdBy: session.user.sub,
     },
-    include: { band: { select: { name: true } } },
+    include: { eventBand: { select: { name: true } } },
   });
 
   return Response.json(serializeBandSchedule(schedule), { status: 201 });

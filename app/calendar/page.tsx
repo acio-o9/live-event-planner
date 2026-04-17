@@ -7,12 +7,12 @@ import { ScheduleFormModal } from "@/components/calendar/ScheduleFormModal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { useSchedules, useScheduleMutations } from "@/hooks/useSchedules";
 import { useAuth } from "@/hooks/useAuth";
-import { bandsApi } from "@/lib/api/bands";
-import type { Band } from "@/lib/types";
+import { liveEventsApi } from "@/lib/api/live-events";
+import type { EventBand } from "@/lib/types";
 
 function CalendarPage() {
   const { user } = useAuth();
-  const [userBands, setUserBands] = useState<Band[]>([]);
+  const [userBands, setUserBands] = useState<EventBand[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   const now = new Date();
@@ -24,10 +24,19 @@ function CalendarPage() {
   const { create, remove } = useScheduleMutations(reload);
 
   useEffect(() => {
-    bandsApi.list().then((bands) => {
-      if (user) {
-        setUserBands(bands.filter((b) => b.members.some((m) => m.userSub === user.sub)));
+    if (!user) return;
+    liveEventsApi.list().then((events) => {
+      const bands: EventBand[] = [];
+      const seen = new Set<string>();
+      for (const event of events) {
+        for (const band of event.bands) {
+          if (!seen.has(band.id) && band.members.some((m) => m.userSub === user.sub)) {
+            bands.push(band);
+            seen.add(band.id);
+          }
+        }
       }
+      setUserBands(bands);
     });
   }, [user]);
 

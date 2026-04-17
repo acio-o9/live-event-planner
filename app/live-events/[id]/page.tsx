@@ -4,10 +4,11 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { MilestoneList } from "@/components/live-events/MilestoneList";
-import { AddBandModal } from "@/components/live-events/AddBandModal";
+import { EventBandFormModal } from "@/components/live-events/EventBandFormModal";
+import { BandMembersModal } from "@/components/live-events/BandMembersModal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { liveEventsApi } from "@/lib/api/live-events";
-import { LiveEvent } from "@/lib/types";
+import { LiveEvent, EventBand } from "@/lib/types";
 import Link from "next/link";
 
 function LiveEventDetailPage() {
@@ -17,6 +18,8 @@ function LiveEventDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddBand, setShowAddBand] = useState(false);
+  const [editingBand, setEditingBand] = useState<{ id: string; name: string; description?: string } | null>(null);
+  const [managingMembersBand, setManagingMembersBand] = useState<EventBand | null>(null);
 
   useEffect(() => {
     liveEventsApi
@@ -25,6 +28,14 @@ function LiveEventDetailPage() {
       .catch((e) => setError(e.message))
       .finally(() => setIsLoading(false));
   }, [id]);
+
+  const handleBandDelete = async (eventBandId: string) => {
+    if (!confirm("このバンドをイベントから削除しますか？")) return;
+    await liveEventsApi.removeBand(id, eventBandId);
+    setEvent((prev) =>
+      prev ? { ...prev, bands: prev.bands.filter((b) => b.id !== eventBandId) } : prev
+    );
+  };
 
   const handleMilestoneStatusChange = async (
     milestoneId: string,
@@ -89,18 +100,40 @@ function LiveEventDetailPage() {
         {event.bands.length === 0 ? (
           <p className="text-gray-400 text-sm">まだ参加バンドがいません</p>
         ) : (
-          <ul className="flex flex-wrap gap-2">
+          <ul className="space-y-2">
             {event.bands.map((b) => (
-              <li key={b.id}>
+              <li key={b.id} className="flex items-center gap-2 bg-white border border-gray-200 rounded px-3 py-2">
                 <Link
                   href={`/live-events/${id}/setlist?band=${b.id}`}
-                  className="text-sm bg-white border border-gray-200 rounded px-3 py-1 hover:shadow-sm"
+                  className="text-sm font-medium text-gray-800 hover:text-blue-600 flex-1"
                 >
-                  {b.band.name}
+                  {b.name}
                   {b.snapshotTakenAt && (
                     <span className="ml-1 text-xs text-green-500">✓</span>
                   )}
                 </Link>
+                {b.description && (
+                  <span className="text-xs text-gray-400 flex-1">{b.description}</span>
+                )}
+                <span className="text-xs text-gray-400">{b.members.length}人</span>
+                <button
+                  onClick={() => setManagingMembersBand(b)}
+                  className="text-xs text-gray-400 hover:text-blue-600 px-1"
+                >
+                  メンバー
+                </button>
+                <button
+                  onClick={() => setEditingBand({ id: b.id, name: b.name, description: b.description })}
+                  className="text-xs text-gray-400 hover:text-blue-600 px-1"
+                >
+                  編集
+                </button>
+                <button
+                  onClick={() => handleBandDelete(b.id)}
+                  className="text-xs text-gray-400 hover:text-red-600 px-1"
+                >
+                  削除
+                </button>
               </li>
             ))}
           </ul>
@@ -108,15 +141,46 @@ function LiveEventDetailPage() {
       </section>
 
       {showAddBand && (
-        <AddBandModal
-          alreadyAddedBandIds={event.bands.map((b) => b.bandId)}
-          onSubmit={async (bandId) => {
-            const liveEventBand = await liveEventsApi.addBand(id, { bandId });
+        <EventBandFormModal
+          onSubmit={async (data) => {
+            const newBand = await liveEventsApi.addBand(id, data);
             setEvent((prev) =>
-              prev ? { ...prev, bands: [...prev.bands, liveEventBand] } : prev
+              prev ? { ...prev, bands: [...prev.bands, newBand] } : prev
             );
           }}
           onClose={() => setShowAddBand(false)}
+        />
+      )}
+
+      {managingMembersBand && (
+        <BandMembersModal
+          liveEventId={id}
+          band={managingMembersBand}
+          onUpdate={(updated) => {
+            setManagingMembersBand(updated);
+            setEvent((prev) =>
+              prev
+                ? { ...prev, bands: prev.bands.map((b) => (b.id === updated.id ? updated : b)) }
+                : prev
+            );
+          }}
+          onClose={() => setManagingMembersBand(null)}
+        />
+      )}
+
+      {editingBand && (
+        <EventBandFormModal
+          initial={editingBand}
+          onSubmit={async (data) => {
+            const updated = await liveEventsApi.updateBand(id, editingBand.id, data);
+            setEvent((prev) =>
+              prev
+                ? { ...prev, bands: prev.bands.map((b) => (b.id === editingBand.id ? updated : b)) }
+                : prev
+            );
+            setEditingBand(null);
+          }}
+          onClose={() => setEditingBand(null)}
         />
       )}
 

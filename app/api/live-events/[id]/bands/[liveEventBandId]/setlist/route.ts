@@ -11,16 +11,16 @@ export async function GET(
   const { error } = await requireSession();
   if (error) return error;
 
-  const leb = await prisma.liveEventBand.findUnique({
+  const eb = await prisma.eventBand.findUnique({
     where: { id: params.liveEventBandId },
     select: { liveEventId: true },
   });
-  if (!leb || leb.liveEventId !== params.id) {
-    return Response.json({ error: "Band participation not found" }, { status: 404 });
+  if (!eb || eb.liveEventId !== params.id) {
+    return Response.json({ error: "Band not found" }, { status: 404 });
   }
 
   const setlist = await prisma.setlist.findUnique({
-    where: { liveEventBandId: params.liveEventBandId },
+    where: { eventBandId: params.liveEventBandId },
     include: { songs: { orderBy: { order: "asc" } } },
   });
   if (!setlist) return Response.json({ error: "Setlist not found" }, { status: 404 });
@@ -35,19 +35,19 @@ export async function PUT(
   const { error } = await requireSession();
   if (error) return error;
 
-  const leb = await prisma.liveEventBand.findUnique({
+  const eb = await prisma.eventBand.findUnique({
     where: { id: params.liveEventBandId },
     select: { liveEventId: true },
   });
-  if (!leb || leb.liveEventId !== params.id) {
-    return Response.json({ error: "Band participation not found" }, { status: 404 });
+  if (!eb || eb.liveEventId !== params.id) {
+    return Response.json({ error: "Band not found" }, { status: 404 });
   }
 
   const body: UpdateSetlistRequest = await request.json();
 
   const setlist = await prisma.$transaction(async (tx) => {
     const existing = await tx.setlist.findUnique({
-      where: { liveEventBandId: params.liveEventBandId },
+      where: { eventBandId: params.liveEventBandId },
       select: { id: true },
     });
     if (!existing) return null;

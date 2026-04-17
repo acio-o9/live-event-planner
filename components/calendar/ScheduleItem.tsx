@@ -23,8 +23,8 @@ export function ScheduleItem({ schedule, canDelete, onDelete }: Props) {
     <div
       className="text-xs rounded px-1 py-0.5 flex items-center justify-between gap-1 min-w-0"
       style={{
-        backgroundColor: bandColor(schedule.bandId),
-        color: bandTextColor(schedule.bandId),
+        backgroundColor: bandColor(schedule.eventBandId),
+        color: bandTextColor(schedule.eventBandId),
       }}
     >
       <span className="truncate">
