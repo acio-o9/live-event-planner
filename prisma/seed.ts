@@ -2,6 +2,44 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+async function seedSlackUsers() {
+  const token = process.env.SLACK_BOT_TOKEN;
+  if (!token) {
+    console.log("SLACK_BOT_TOKEN not set, skipping Slack user seed");
+    return;
+  }
+
+  const res = await fetch("https://slack.com/api/users.list", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const data = await res.json();
+  if (!data.ok) {
+    console.warn("Slack users.list failed:", data.error);
+    return;
+  }
+
+  let count = 0;
+  for (const member of data.members) {
+    if (member.deleted || member.is_bot || !member.profile?.email) continue;
+
+    const slackSub = member.id as string;
+    const nickname = (member.profile.display_name || member.profile.real_name || slackSub) as string;
+
+    await prisma.user.upsert({
+      where: { slackSub },
+      update: { nickname },
+      create: {
+        sub: `slack:${slackSub}`,
+        slackSub,
+        nickname,
+        avatarUrl: member.profile.image_72 ?? null,
+      },
+    });
+    count++;
+  }
+  console.log(`Seed complete: ${count} Slack users upserted`);
+}
+
 async function main() {
   const instruments = [
     { name: "ボーカル", order: 1 },
@@ -23,6 +61,8 @@ async function main() {
   }
 
   console.log("Seed complete: instruments inserted");
+
+  await seedSlackUsers();
 }
 
 main()

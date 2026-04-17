@@ -9,6 +9,7 @@ datasource db {
 
 model User {
   sub       String   @id
+  slackSub  String?  @unique
   nickname  String
   avatarUrl String?
   createdAt DateTime @default(now())
@@ -33,7 +34,7 @@ model UserInstrument {
   userSub      String
   instrumentId String
 
-  user       User       @relation(fields: [userSub], references: [sub], onDelete: Cascade)
+  user       User       @relation(fields: [userSub], references: [sub], onDelete: Cascade, onUpdate: Cascade)
   instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
 
   @@id([userSub, instrumentId])
@@ -51,7 +52,7 @@ model LiveEvent {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  creator    User         @relation(fields: [createdBy], references: [sub])
+  creator    User         @relation(fields: [createdBy], references: [sub], onUpdate: Cascade)
   bands      EventBand[]
   milestones Milestone[]
   expenses   Expense[]
@@ -67,7 +68,7 @@ model EventBand {
   updatedAt   DateTime @updatedAt
 
   liveEvent       LiveEvent         @relation(fields: [liveEventId], references: [id], onDelete: Cascade)
-  creator         User              @relation(fields: [createdBy], references: [sub])
+  creator         User              @relation(fields: [createdBy], references: [sub], onUpdate: Cascade)
   members         EventBandMember[]
   snapshots       MemberSnapshot[]
   setlist         Setlist?
@@ -82,7 +83,7 @@ model EventBandMember {
   joinedAt    DateTime @default(now())
 
   eventBand EventBand @relation(fields: [eventBandId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userSub], references: [sub])
+  user      User      @relation(fields: [userSub], references: [sub], onUpdate: Cascade)
 
   @@id([eventBandId, userSub])
 }
@@ -98,7 +99,7 @@ model BandSchedule {
   updatedAt   DateTime @updatedAt
 
   eventBand EventBand @relation(fields: [eventBandId], references: [id], onDelete: Cascade)
-  creator   User      @relation(fields: [createdBy], references: [sub])
+  creator   User      @relation(fields: [createdBy], references: [sub], onUpdate: Cascade)
 }
 
 model MemberSnapshot {
@@ -138,7 +139,7 @@ model Task {
 
   milestone   Milestone  @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
   eventBand   EventBand? @relation(fields: [eventBandId], references: [id], onDelete: SetNull)
-  assignee    User?      @relation("AssignedTasks", fields: [assigneeUserSub], references: [sub])
+  assignee    User?      @relation("AssignedTasks", fields: [assigneeUserSub], references: [sub], onUpdate: Cascade)
 }
 
 model Setlist {
@@ -172,5 +173,5 @@ model Expense {
   updatedAt   DateTime @updatedAt
 
   liveEvent  LiveEvent @relation(fields: [liveEventId], references: [id], onDelete: Cascade)
-  paidByUser User      @relation(fields: [paidBy], references: [sub])
+  paidByUser User      @relation(fields: [paidBy], references: [sub], onUpdate: Cascade)
 }

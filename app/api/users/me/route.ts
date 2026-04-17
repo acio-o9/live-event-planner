@@ -1,10 +1,28 @@
 import { requireSession } from "@/lib/api/session";
 import { prisma } from "@/lib/prisma";
 import { serializeUser, userInclude } from "@/lib/db/serializers";
+import { lookupSlackSubByEmail } from "@/lib/auth/slack-allowlist";
 
 export async function GET() {
   const { session, error } = await requireSession();
   if (error) return error;
+
+  // 初回ログイン時: Slack APIでemailからslackSubを特定し、シード済みユーザーをclaim
+  const email = session.user.email;
+  if (email) {
+    const slackSub = await lookupSlackSubByEmail(email);
+    if (slackSub) {
+      const pending = await prisma.user.findFirst({
+        where: { slackSub, NOT: { sub: session.user.sub } },
+      });
+      if (pending) {
+        await prisma.user.update({
+          where: { sub: pending.sub },
+          data: { sub: session.user.sub },
+        });
+      }
+    }
+  }
 
   const user = await prisma.user.upsert({
     where: { sub: session.user.sub },

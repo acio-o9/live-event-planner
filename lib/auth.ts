@@ -60,6 +60,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       } else if (account && profile) {
         // Google OIDC
         token.sub = profile.sub ?? undefined;
+        token.email = profile.email ?? undefined;
         token.nickname = (profile.name ?? profile.email ?? token.sub) as string;
         token.avatarUrl = profile.picture == null ? undefined : profile.picture;
       }
@@ -68,6 +69,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // Session にも sub を渡す
     session({ session, token }) {
       session.user.sub = token.sub as string;
+      session.user.email = token.email as string | undefined;
       session.user.nickname = token.nickname as string;
       session.user.avatarUrl = token.avatarUrl as string | undefined;
       return session;

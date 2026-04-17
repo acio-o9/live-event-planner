@@ -52,6 +52,26 @@ export async function fetchSlackAllowedEmails(): Promise<Set<string>> {
 }
 
 /**
+ * メールアドレスからSlackメンバーIDを返す。見つからない場合はnull。
+ * 開発環境ではnullを返す（Slack APIを呼ばない）。
+ */
+export async function lookupSlackSubByEmail(email: string): Promise<string | null> {
+  if (process.env.NODE_ENV === "development") return null;
+
+  const token = process.env.SLACK_BOT_TOKEN;
+  if (!token) return null;
+
+  const res = await fetch(
+    `https://slack.com/api/users.lookupByEmail?email=${encodeURIComponent(email)}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  if (!res.ok) return null;
+
+  const data = await res.json();
+  return data.ok ? (data.user.id as string) : null;
+}
+
+/**
  * メールアドレスがSlack許可リストに含まれるか検証する。
  * エラー時はfail-safe（false を返してログイン拒否）。
  */
