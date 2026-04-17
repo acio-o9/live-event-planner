@@ -69,7 +69,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     // Session にも sub を渡す
     session({ session, token }) {
       session.user.sub = token.sub as string;
-      session.user.email = token.email as string | undefined;
+      if (token.email) session.user.email = token.email as string;
       session.user.nickname = token.nickname as string;
       session.user.avatarUrl = token.avatarUrl as string | undefined;
       return session;
