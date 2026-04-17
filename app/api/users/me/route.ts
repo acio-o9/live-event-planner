@@ -8,7 +8,7 @@ export async function GET() {
   if (error) return error;
 
   // 初回ログイン時: Slack APIでemailからslackSubを特定し、シード済みユーザーをclaim
-  const email = session.user.email;
+  const email = session.user.email ?? null;
   if (email) {
     const slackSub = await lookupSlackSubByEmail(email);
     if (slackSub) {
