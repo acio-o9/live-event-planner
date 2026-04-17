@@ -2,7 +2,7 @@
 
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { AuthGuard } from "@/components/auth/AuthGuard";
-import { SetlistEditor } from "@/components/bands/SetlistEditor";
+import { SetlistEditor } from "@/components/live-events/SetlistEditor";
 import { useSetlist } from "@/hooks/useSetlist";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 
