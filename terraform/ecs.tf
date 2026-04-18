@@ -59,6 +59,49 @@ resource "aws_ecs_task_definition" "app" {
   ])
 }
 
+resource "aws_ecs_task_definition" "migrate" {
+  family                   = "${var.app_name}-migrate"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = var.container_cpu
+  memory                   = var.container_memory
+  execution_role_arn       = aws_iam_role.ecs_execution.arn
+  task_role_arn            = aws_iam_role.ecs_task.arn
+
+  container_definitions = jsonencode([
+    {
+      name    = var.app_name
+      image   = "${aws_ecr_repository.app.repository_url}:latest"
+      command = ["npx", "prisma", "migrate", "deploy"]
+
+      environment = [
+        { name = "AUTH_TRUST_HOST", value = "true" }
+      ]
+
+      secrets = [
+        { name = "DATABASE_URL",         valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:DATABASE_URL::" },
+        { name = "AUTH_SECRET",          valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:AUTH_SECRET::" },
+        { name = "AUTH_URL",             valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:AUTH_URL::" },
+        { name = "NEXTAUTH_URL",         valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:NEXTAUTH_URL::" },
+        { name = "GOOGLE_CLIENT_ID",     valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:GOOGLE_CLIENT_ID::" },
+        { name = "GOOGLE_CLIENT_SECRET", valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:GOOGLE_CLIENT_SECRET::" },
+        { name = "SLACK_BOT_TOKEN",      valueFrom = "${aws_secretsmanager_secret.app_secrets.arn}:SLACK_BOT_TOKEN::" }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.app.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "migrate"
+        }
+      }
+
+      essential = true
+    }
+  ])
+}
+
 resource "aws_ecs_service" "app" {
   name                               = var.app_name
   cluster                            = aws_ecs_cluster.main.id

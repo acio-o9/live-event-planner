@@ -71,10 +71,9 @@ jobs:
         run: |
           if ! TASK_ARN=$(aws ecs run-task \
             --cluster $ECS_CLUSTER \
-            --task-definition $ECS_SERVICE \
+            --task-definition $ECS_SERVICE-migrate \
             --launch-type FARGATE \
             --network-configuration "awsvpcConfiguration={subnets=[${{ secrets.PRIVATE_SUBNET_IDS }}],securityGroups=[${{ secrets.ECS_SECURITY_GROUP_ID }}]}" \
-            --overrides "{\"containerOverrides\":[{\"name\":\"$CONTAINER_NAME\",\"command\":[\"npx\",\"prisma\",\"migrate\",\"deploy\"]}]}" \
             --count 1 \
             --query 'tasks[0].taskArn' \
             --output text); then
@@ -97,7 +96,7 @@ jobs:
         run: |
           if ! TASK_ARN=$(aws ecs run-task \
             --cluster $ECS_CLUSTER \
-            --task-definition $ECS_SERVICE \
+            --task-definition $ECS_SERVICE-migrate \
             --launch-type FARGATE \
             --network-configuration "awsvpcConfiguration={subnets=[${{ secrets.PRIVATE_SUBNET_IDS }}],securityGroups=[${{ secrets.ECS_SECURITY_GROUP_ID }}]}" \
             --overrides "{\"containerOverrides\":[{\"name\":\"$CONTAINER_NAME\",\"command\":[\"npx\",\"prisma\",\"db\",\"seed\"]}]}" \
