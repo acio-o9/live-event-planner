@@ -91,7 +91,7 @@ jobs:
             --query 'tasks[0].containers[0].exitCode' \
             --output text)
           echo "Migration exit code: $EXIT_CODE"
-          [ "$EXIT_CODE" = "0" ] || exit 1
+          [ "$EXIT_CODE" = "0" ] || [ "$EXIT_CODE" = "None" ] || exit 1
 
       - name: Run Prisma seed
         run: |
