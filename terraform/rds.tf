@@ -18,6 +18,7 @@ resource "aws_rds_cluster" "aurora" {
   skip_final_snapshot    = false
   final_snapshot_identifier = "${var.app_name}-final-snapshot"
   deletion_protection    = true
+  enable_http_endpoint   = true
 
   serverlessv2_scaling_configuration {
     min_capacity = 0.5
