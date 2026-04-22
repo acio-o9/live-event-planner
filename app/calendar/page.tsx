@@ -30,7 +30,7 @@ function CalendarPage() {
       const seen = new Set<string>();
       for (const event of events) {
         for (const band of event.bands) {
-          if (!seen.has(band.id) && band.members.some((m) => m.userSub === user.sub)) {
+          if (!seen.has(band.id) && band.members.some((m) => m.userId === user.id)) {
             bands.push(band);
             seen.add(band.id);
           }

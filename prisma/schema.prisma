@@ -8,7 +8,8 @@ datasource db {
 }
 
 model User {
-  sub       String   @id
+  id        String   @id @default(uuid())
+  sub       String   @unique
   slackSub  String?  @unique
   nickname  String
   avatarUrl String?
@@ -31,13 +32,13 @@ model Instrument {
 }
 
 model UserInstrument {
-  userSub      String
+  userId       String
   instrumentId String
 
-  user       User       @relation(fields: [userSub], references: [sub], onDelete: Cascade, onUpdate: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   instrument Instrument @relation(fields: [instrumentId], references: [id], onDelete: Cascade)
 
-  @@id([userSub, instrumentId])
+  @@id([userId, instrumentId])
 }
 
 model LiveEvent {
@@ -52,7 +53,7 @@ model LiveEvent {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  creator    User         @relation(fields: [createdBy], references: [sub], onUpdate: Cascade)
+  creator    User         @relation(fields: [createdBy], references: [id], onUpdate: Cascade)
   bands      EventBand[]
   milestones Milestone[]
   expenses   Expense[]
@@ -68,7 +69,7 @@ model EventBand {
   updatedAt   DateTime @updatedAt
 
   liveEvent       LiveEvent         @relation(fields: [liveEventId], references: [id], onDelete: Cascade)
-  creator         User              @relation(fields: [createdBy], references: [sub], onUpdate: Cascade)
+  creator         User              @relation(fields: [createdBy], references: [id], onUpdate: Cascade)
   members         EventBandMember[]
   snapshots       MemberSnapshot[]
   setlist         Setlist?
@@ -78,14 +79,14 @@ model EventBand {
 
 model EventBandMember {
   eventBandId String
-  userSub     String
+  userId      String
   role        String   @default("member")
   joinedAt    DateTime @default(now())
 
   eventBand EventBand @relation(fields: [eventBandId], references: [id], onDelete: Cascade)
-  user      User      @relation(fields: [userSub], references: [sub], onUpdate: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onUpdate: Cascade)
 
-  @@id([eventBandId, userSub])
+  @@id([eventBandId, userId])
 }
 
 model BandSchedule {
@@ -99,13 +100,13 @@ model BandSchedule {
   updatedAt   DateTime @updatedAt
 
   eventBand EventBand @relation(fields: [eventBandId], references: [id], onDelete: Cascade)
-  creator   User      @relation(fields: [createdBy], references: [sub], onUpdate: Cascade)
+  creator   User      @relation(fields: [createdBy], references: [id], onUpdate: Cascade)
 }
 
 model MemberSnapshot {
   id          String   @id @default(uuid())
   eventBandId String
-  userSub     String
+  userId      String
   nickname    String
   role        String
   takenAt     DateTime @default(now())
@@ -131,7 +132,7 @@ model Task {
   milestoneId     String
   eventBandId     String?
   title           String
-  assigneeUserSub String?
+  assigneeUserId  String?
   status          String   @default("pending")
   order           Int
   createdAt       DateTime @default(now())
@@ -139,7 +140,7 @@ model Task {
 
   milestone   Milestone  @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
   eventBand   EventBand? @relation(fields: [eventBandId], references: [id], onDelete: SetNull)
-  assignee    User?      @relation("AssignedTasks", fields: [assigneeUserSub], references: [sub], onUpdate: Cascade)
+  assignee    User?      @relation("AssignedTasks", fields: [assigneeUserId], references: [id], onUpdate: Cascade)
 }
 
 model Setlist {
@@ -173,5 +174,5 @@ model Expense {
   updatedAt   DateTime @updatedAt
 
   liveEvent  LiveEvent @relation(fields: [liveEventId], references: [id], onDelete: Cascade)
-  paidByUser User      @relation(fields: [paidBy], references: [sub], onUpdate: Cascade)
+  paidByUser User      @relation(fields: [paidBy], references: [id], onUpdate: Cascade)
 }

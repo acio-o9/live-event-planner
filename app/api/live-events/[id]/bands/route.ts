@@ -1,4 +1,4 @@
-import { requireSession } from "@/lib/api/session";
+import { requireUser } from "@/lib/api/session";
 import { prisma } from "@/lib/prisma";
 import { eventBandInclude, serializeEventBand } from "@/lib/db/serializers";
 import { CreateEventBandRequest } from "@/lib/types";
@@ -9,7 +9,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { session, error } = await requireSession();
+  const { userId, error } = await requireUser();
   if (error) return error;
 
   const eventExists = await prisma.liveEvent.findUnique({ where: { id: params.id }, select: { id: true } });
@@ -26,9 +26,9 @@ export async function POST(
         liveEventId: params.id,
         name: body.name.trim(),
         description: body.description,
-        createdBy: session.user.sub,
+        createdBy: userId!,
         members: {
-          create: { userSub: session.user.sub, role: "leader" },
+          create: { userId: userId!, role: "leader" },
         },
       },
     });

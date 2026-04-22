@@ -1,4 +1,4 @@
-import { requireSession } from "@/lib/api/session";
+import { requireUser } from "@/lib/api/session";
 import { prisma } from "@/lib/prisma";
 import { NextRequest } from "next/server";
 
@@ -6,7 +6,7 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: { scheduleId: string } }
 ) {
-  const { session, error } = await requireSession();
+  const { userId, error } = await requireUser();
   if (error) return error;
 
   const schedule = await prisma.bandSchedule.findUnique({
@@ -16,7 +16,7 @@ export async function DELETE(
 
   // バンドメンバーシップ確認
   const membership = await prisma.eventBandMember.findUnique({
-    where: { eventBandId_userSub: { eventBandId: schedule.eventBandId, userSub: session.user.sub } },
+    where: { eventBandId_userId: { eventBandId: schedule.eventBandId, userId: userId! } },
   });
   if (!membership) {
     return Response.json({ error: "Forbidden" }, { status: 403 });

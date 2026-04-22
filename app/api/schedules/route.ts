@@ -1,10 +1,10 @@
-import { requireSession } from "@/lib/api/session";
+import { requireUser } from "@/lib/api/session";
 import { prisma } from "@/lib/prisma";
 import { serializeBandSchedule } from "@/lib/db/serializers";
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const { error } = await requireSession();
+  const { error } = await requireUser();
   if (error) return error;
 
   const { searchParams } = new URL(request.url);
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const { session, error } = await requireSession();
+  const { userId, error } = await requireUser();
   if (error) return error;
 
   const body = await request.json();
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
   // バンドメンバーシップ確認
   const membership = await prisma.eventBandMember.findUnique({
-    where: { eventBandId_userSub: { eventBandId, userSub: session.user.sub } },
+    where: { eventBandId_userId: { eventBandId, userId: userId! } },
   });
   if (!membership) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       location,
       startAt: new Date(startAt),
       endAt: new Date(endAt),
-      createdBy: session.user.sub,
+      createdBy: userId!,
     },
     include: { eventBand: { select: { name: true } } },
   });

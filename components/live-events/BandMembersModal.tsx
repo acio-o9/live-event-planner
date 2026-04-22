@@ -23,33 +23,33 @@ export function BandMembersModal({ liveEventId, band, onUpdate, onClose }: Props
       .finally(() => setIsLoading(false));
   }, []);
 
-  const memberSubs = new Set(band.members.map((m) => m.userSub));
-  const addableUsers = allUsers.filter((u) => !memberSubs.has(u.sub));
+  const memberIds = new Set(band.members.map((m) => m.userId));
+  const addableUsers = allUsers.filter((u) => !memberIds.has(u.id));
 
-  const handleAdd = async (userSub: string) => {
+  const handleAdd = async (userId: string) => {
     setError(null);
     try {
-      const updated = await liveEventsApi.addMember(liveEventId, band.id, { userSub, role: "member" });
+      const updated = await liveEventsApi.addMember(liveEventId, band.id, { userId, role: "member" });
       onUpdate(updated);
     } catch (e) {
       setError(e instanceof Error ? e.message : "追加に失敗しました");
     }
   };
 
-  const handleRemove = async (userSub: string) => {
+  const handleRemove = async (userId: string) => {
     setError(null);
     try {
-      const updated = await liveEventsApi.removeMember(liveEventId, band.id, userSub);
+      const updated = await liveEventsApi.removeMember(liveEventId, band.id, userId);
       onUpdate(updated);
     } catch (e) {
       setError(e instanceof Error ? e.message : "削除に失敗しました");
     }
   };
 
-  const handleChangeLeader = async (userSub: string) => {
+  const handleChangeLeader = async (userId: string) => {
     setError(null);
     try {
-      const updated = await liveEventsApi.changeLeader(liveEventId, band.id, { userSub });
+      const updated = await liveEventsApi.changeLeader(liveEventId, band.id, { userId });
       onUpdate(updated);
     } catch (e) {
       setError(e instanceof Error ? e.message : "バンドマスターの変更に失敗しました");
@@ -74,7 +74,7 @@ export function BandMembersModal({ liveEventId, band, onUpdate, onClose }: Props
             ) : (
               <ul className="space-y-1">
                 {band.members.map((m) => (
-                  <li key={m.userSub} className="flex items-center justify-between py-1">
+                  <li key={m.userId} className="flex items-center justify-between py-1">
                     <span className="text-sm text-gray-800">
                       {m.user.nickname}
                       {m.role === "leader" && (
@@ -84,13 +84,13 @@ export function BandMembersModal({ liveEventId, band, onUpdate, onClose }: Props
                     {m.role !== "leader" && (
                       <div className="flex gap-2">
                         <button
-                          onClick={() => handleChangeLeader(m.userSub)}
+                          onClick={() => handleChangeLeader(m.userId)}
                           className="text-xs text-blue-600 hover:text-blue-800"
                         >
                           バンドマスターに変更
                         </button>
                         <button
-                          onClick={() => handleRemove(m.userSub)}
+                          onClick={() => handleRemove(m.userId)}
                           className="text-xs text-gray-400 hover:text-red-600"
                         >
                           削除
@@ -112,10 +112,10 @@ export function BandMembersModal({ liveEventId, band, onUpdate, onClose }: Props
             ) : (
               <ul className="space-y-1 max-h-40 overflow-y-auto">
                 {addableUsers.map((u) => (
-                  <li key={u.sub} className="flex items-center justify-between py-1">
+                  <li key={u.id} className="flex items-center justify-between py-1">
                     <span className="text-sm text-gray-800">{u.nickname}</span>
                     <button
-                      onClick={() => handleAdd(u.sub)}
+                      onClick={() => handleAdd(u.id)}
                       className="text-xs text-blue-600 hover:text-blue-800"
                     >
                       追加

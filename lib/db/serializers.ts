@@ -47,6 +47,7 @@ type PrismaUserInstrument = {
 };
 
 type PrismaUser = {
+  id: string;
   sub: string;
   nickname: string;
   avatarUrl: string | null;
@@ -56,7 +57,7 @@ type PrismaUser = {
 
 type PrismaEventBandMember = {
   eventBandId: string;
-  userSub: string;
+  userId: string;
   role: string;
   joinedAt: Date;
   user: PrismaUser;
@@ -67,7 +68,7 @@ type PrismaTask = {
   milestoneId: string;
   eventBandId: string | null;
   title: string;
-  assigneeUserSub: string | null;
+  assigneeUserId: string | null;
   status: string;
   order: number;
 };
@@ -97,7 +98,7 @@ type PrismaSetlist = {
 };
 
 type PrismaMemberSnapshot = {
-  userSub: string;
+  userId: string;
   nickname: string;
   role: string;
   takenAt: Date;
@@ -138,6 +139,7 @@ export function serializeInstrument(i: PrismaInstrument): Instrument {
 
 export function serializeUser(u: PrismaUser): User {
   return {
+    id: u.id,
     sub: u.sub,
     nickname: u.nickname,
     avatarUrl: u.avatarUrl ?? undefined,
@@ -150,7 +152,7 @@ export function serializeUser(u: PrismaUser): User {
 
 export function serializeEventBandMember(m: PrismaEventBandMember): EventBandMember {
   return {
-    userSub: m.userSub,
+    userId: m.userId,
     user: serializeUser(m.user),
     role: m.role as EventBandMember["role"],
     joinedAt: m.joinedAt.toISOString(),
@@ -163,7 +165,7 @@ export function serializeTask(t: PrismaTask): Task {
     milestoneId: t.milestoneId,
     eventBandId: t.eventBandId ?? undefined,
     title: t.title,
-    assigneeUserSub: t.assigneeUserSub ?? undefined,
+    assigneeUserId: t.assigneeUserId ?? undefined,
     status: t.status as Task["status"],
     order: t.order,
   };
@@ -201,7 +203,7 @@ export function serializeSetlist(s: PrismaSetlist): Setlist {
 
 export function serializeMemberSnapshot(s: PrismaMemberSnapshot): MemberSnapshot {
   return {
-    userSub: s.userSub,
+    userId: s.userId,
     nickname: s.nickname,
     role: s.role as MemberSnapshot["role"],
   };

@@ -59,7 +59,7 @@ export async function POST(
       milestoneId: params.milestoneId,
       eventBandId: body.eventBandId ?? null,
       title: body.title.trim(),
-      assigneeUserSub: body.assigneeUserSub ?? null,
+      assigneeUserId: body.assigneeUserId ?? null,
       status: "pending",
       order: taskCount + 1,
     },

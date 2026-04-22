@@ -75,8 +75,8 @@ export const liveEventsApi = {
       body: JSON.stringify(data),
     }),
 
-  removeMember: (id: string, eventBandId: string, userSub: string) =>
-    fetchJson<EventBand>(`/api/live-events/${id}/bands/${eventBandId}/members/${encodeURIComponent(userSub)}`, {
+  removeMember: (id: string, eventBandId: string, userId: string) =>
+    fetchJson<EventBand>(`/api/live-events/${id}/bands/${eventBandId}/members/${encodeURIComponent(userId)}`, {
       method: "DELETE",
     }),
 

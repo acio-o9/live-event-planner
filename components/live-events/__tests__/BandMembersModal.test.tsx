@@ -10,8 +10,8 @@ const mockBand: EventBand = {
   name: "テストバンド",
   description: null,
   members: [
-    { userSub: "user-1", role: "leader", user: { sub: "user-1", nickname: "たろう", instruments: [], createdAt: "" } },
-    { userSub: "user-2", role: "member", user: { sub: "user-2", nickname: "はなこ", instruments: [], createdAt: "" } },
+    { userId: "uid-1", role: "leader", user: { id: "uid-1", sub: "sub-1", nickname: "たろう", instruments: [], createdAt: "" } },
+    { userId: "uid-2", role: "member", user: { id: "uid-2", sub: "sub-2", nickname: "はなこ", instruments: [], createdAt: "" } },
   ],
 };
 
@@ -45,7 +45,6 @@ describe("BandMembersModal - バンドマスター表示", () => {
 
   it("バンドマスター行に「バンドマスターに変更」ボタンは表示されない", async () => {
     render(<BandMembersModal {...defaultProps} />);
-    const buttons = screen.getAllByRole("button");
     const leaderRow = screen.getByText("たろう").closest("li");
     expect(leaderRow?.querySelector("button")).toBeNull();
   });
@@ -60,7 +59,7 @@ describe("BandMembersModal - バンドマスター変更", () => {
     fireEvent.click(screen.getByText("バンドマスターに変更"));
 
     await waitFor(() => {
-      expect(liveEventsApi.changeLeader).toHaveBeenCalledWith("event-1", "band-1", { userSub: "user-2" });
+      expect(liveEventsApi.changeLeader).toHaveBeenCalledWith("event-1", "band-1", { userId: "uid-2" });
     });
   });
 

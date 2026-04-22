@@ -6,7 +6,7 @@ import { ExpenseFormModal } from "./ExpenseFormModal";
 
 interface Props {
   expenses: Expense[];
-  participants: { userSub: string; nickname: string }[];
+  participants: { userId: string; nickname: string }[];
   onUpdate: (expenseId: string, data: CreateExpenseRequest) => Promise<void>;
   onDelete: (expenseId: string) => Promise<void>;
 }

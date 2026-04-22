@@ -93,14 +93,17 @@ export async function PUT(request: Request) {
   const sub = session.user.sub;
 
   const user = await prisma.$transaction(async (tx) => {
-    await tx.userInstrument.deleteMany({ where: { userSub: sub } });
+    const currentUser = await tx.user.findUnique({ where: { sub }, select: { id: true } });
+    if (!currentUser) throw new Error("User not found");
+
+    await tx.userInstrument.deleteMany({ where: { userId: currentUser.id } });
     if (instrumentIds.length > 0) {
       await tx.userInstrument.createMany({
-        data: instrumentIds.map((id: string) => ({ userSub: sub, instrumentId: id })),
+        data: instrumentIds.map((id: string) => ({ userId: currentUser.id, instrumentId: id })),
       });
     }
     return tx.user.update({
-      where: { sub },
+      where: { id: currentUser.id },
       data: { nickname: trimmed },
       include: userInclude,
     });

@@ -16,7 +16,7 @@ function ExpensesPage() {
   const router = useRouter();
   const { expenses, isLoading, create, update, remove } = useExpenses(id);
   const { summary, isLoading: summaryLoading, reload: reloadSummary } = useExpenseSummary(id);
-  const [participants, setParticipants] = useState<{ userSub: string; nickname: string }[]>([]);
+  const [participants, setParticipants] = useState<{ userId: string; nickname: string }[]>([]);
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
@@ -25,16 +25,16 @@ function ExpensesPage() {
       for (const band of event.bands) {
         if (band.memberSnapshot.length > 0) {
           for (const snap of band.memberSnapshot) {
-            participantMap.set(snap.userSub, snap.nickname);
+            participantMap.set(snap.userId, snap.nickname);
           }
         } else {
           for (const member of band.members) {
-            participantMap.set(member.userSub, member.user.nickname);
+            participantMap.set(member.userId, member.user.nickname);
           }
         }
       }
       setParticipants(
-        Array.from(participantMap.entries()).map(([userSub, nickname]) => ({ userSub, nickname }))
+        Array.from(participantMap.entries()).map(([userId, nickname]) => ({ userId, nickname }))
       );
     });
   }, [id]);

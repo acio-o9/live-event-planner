@@ -29,17 +29,17 @@ export async function GET(
   for (const band of event.bands) {
     if (band.snapshots.length > 0) {
       for (const snap of band.snapshots) {
-        participantMap.set(snap.userSub, snap.nickname);
+        participantMap.set(snap.userId, snap.nickname);
       }
     } else {
       for (const member of band.members) {
-        participantMap.set(member.userSub, member.user.nickname);
+        participantMap.set(member.userId, member.user.nickname);
       }
     }
   }
 
-  const participants = Array.from(participantMap.entries()).map(([userSub, nickname]) => ({
-    userSub,
+  const participants = Array.from(participantMap.entries()).map(([userId, nickname]) => ({
+    userId,
     nickname,
   }));
 

@@ -7,7 +7,7 @@ export interface ExpenseRecord {
 }
 
 export interface Participant {
-  userSub: string;
+  userId: string;
   nickname: string;
 }
 
@@ -30,10 +30,10 @@ export function calcExpenseSummary(
     paidMap.set(expense.paidBy, (paidMap.get(expense.paidBy) ?? 0) + expense.amount);
   }
 
-  const breakdown = participants.map(({ userSub, nickname }) => {
-    const paidAmount = paidMap.get(userSub) ?? 0;
+  const breakdown = participants.map(({ userId, nickname }) => {
+    const paidAmount = paidMap.get(userId) ?? 0;
     return {
-      userSub,
+      userId,
       nickname,
       paidAmount,
       balance: paidAmount - perPersonAmount,

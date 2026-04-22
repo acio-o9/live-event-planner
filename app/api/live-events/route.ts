@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
   }
 
   const event = await prisma.$transaction(async (tx) => {
-    await tx.user.upsert({
+    const user = await tx.user.upsert({
       where: { sub: session.user.sub },
       update: { nickname: session.user.nickname, avatarUrl: session.user.avatarUrl ?? null },
       create: { sub: session.user.sub, nickname: session.user.nickname, avatarUrl: session.user.avatarUrl ?? null },
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         date: body.date ? new Date(body.date) : null,
         venue: body.venue,
         status: "planning",
-        createdBy: session.user.sub,
+        createdBy: user.id,
       },
     });
 

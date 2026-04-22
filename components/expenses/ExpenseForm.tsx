@@ -6,7 +6,7 @@ import { CreateExpenseRequest, Expense } from "@/lib/types";
 const CATEGORIES = ["会場費", "機材費", "飲食費", "交通費", "その他"];
 
 interface Props {
-  participants: { userSub: string; nickname: string }[];
+  participants: { userId: string; nickname: string }[];
   initialData?: Expense;
   onSubmit: (data: CreateExpenseRequest) => Promise<void>;
   onCancel?: () => void;
@@ -65,7 +65,7 @@ export function ExpenseForm({ participants, initialData, onSubmit, onCancel }: P
         >
           <option value="">選択してください</option>
           {participants.map((p) => (
-            <option key={p.userSub} value={p.userSub}>
+            <option key={p.userId} value={p.userId}>
               {p.nickname}
             </option>
           ))}

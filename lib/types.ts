@@ -4,6 +4,7 @@
 
 // ユーザー（OIDCトークンのsubjectで識別。個人情報は持たない）
 export interface User {
+  id: string;
   sub: string;
   nickname: string;
   avatarUrl?: string;
@@ -36,7 +37,7 @@ export interface LiveEvent {
   bands: EventBand[];
   milestones: Milestone[];
   status: "planning" | "confirmed" | "completed" | "cancelled";
-  createdBy: string; // User.sub
+  createdBy: string; // User.id
   createdAt: string;
   updatedAt: string;
 }
@@ -54,7 +55,7 @@ export interface EventBand {
 }
 
 export interface EventBandMember {
-  userSub: string; // User.sub への参照
+  userId: string; // User.id への参照
   user: User;
   role: "leader" | "member";
   joinedAt: string;
@@ -62,7 +63,7 @@ export interface EventBandMember {
 
 // メンバースナップショット（参加確定時点の記録）
 export interface MemberSnapshot {
-  userSub: string;
+  userId: string;
   nickname: string; // 当時の表示名も保存
   role: "leader" | "member";
 }
@@ -86,7 +87,7 @@ export interface Task {
   milestoneId: string;
   eventBandId?: string; // undefinedならライブ全体タスク、あればバンド個別タスク
   title: string;
-  assigneeUserSub?: string; // 担当者（User.sub）。未アサインも可
+  assigneeUserId?: string; // 担当者（User.id）。未アサインも可
   status: "pending" | "in_progress" | "completed";
   order: number;
 }
@@ -153,12 +154,12 @@ export interface UpdateEventBandRequest {
 }
 
 export interface AddEventBandMemberRequest {
-  userSub: string;
+  userId: string;
   role: "leader" | "member";
 }
 
 export interface UpdateBandLeaderRequest {
-  userSub: string;
+  userId: string;
 }
 
 // --- Live Event ---
@@ -190,12 +191,12 @@ export interface UpdateMilestoneRequest {
 export interface CreateTaskRequest {
   title: string;
   eventBandId?: string;
-  assigneeUserSub?: string;
+  assigneeUserId?: string;
 }
 
 export interface UpdateTaskRequest {
   title?: string;
-  assigneeUserSub?: string | null;
+  assigneeUserId?: string | null;
   status?: Task["status"];
 }
 
@@ -210,7 +211,7 @@ export interface UpdateSetlistRequest {
 export interface Expense {
   id: string;
   liveEventId: string;
-  paidBy: string;       // User.sub
+  paidBy: string;       // User.id
   paidByName: string;   // 表示用ニックネーム
   amount: number;       // 金額（円）
   category: string;     // 会場費・機材費・飲食費・その他
@@ -231,7 +232,7 @@ export interface ExpenseSummary {
   participantCount: number;
   perPersonAmount: number;
   breakdown: {
-    userSub: string;
+    userId: string;
     nickname: string;
     paidAmount: number;
     balance: number; // 正: 受け取り、負: 支払い

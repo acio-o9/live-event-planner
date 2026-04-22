@@ -5,7 +5,7 @@ import { NextRequest } from "next/server";
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { id: string; liveEventBandId: string; userSub: string } }
+  { params }: { params: { id: string; liveEventBandId: string; userId: string } }
 ) {
   const { error } = await requireSession();
   if (error) return error;
@@ -19,12 +19,12 @@ export async function DELETE(
   }
 
   const member = await prisma.eventBandMember.findUnique({
-    where: { eventBandId_userSub: { eventBandId: params.liveEventBandId, userSub: params.userSub } },
+    where: { eventBandId_userId: { eventBandId: params.liveEventBandId, userId: params.userId } },
   });
   if (!member) return Response.json({ error: "Member not found" }, { status: 404 });
 
   await prisma.eventBandMember.delete({
-    where: { eventBandId_userSub: { eventBandId: params.liveEventBandId, userSub: params.userSub } },
+    where: { eventBandId_userId: { eventBandId: params.liveEventBandId, userId: params.userId } },
   });
 
   const updated = await prisma.eventBand.findUnique({

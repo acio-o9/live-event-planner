@@ -65,9 +65,9 @@ export function TaskList({ liveEventId, milestoneId, initialTasks, eventBandId }
           >
             {task.title}
           </span>
-          {task.assigneeUserSub && (
+          {task.assigneeUserId && (
             <span className="text-xs text-gray-400 hidden group-hover:inline">
-              @{task.assigneeUserSub.slice(0, 8)}
+              @{task.assigneeUserId.slice(0, 8)}
             </span>
           )}
           <button

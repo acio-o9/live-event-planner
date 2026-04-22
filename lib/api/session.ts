@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 /**
@@ -14,4 +15,26 @@ export async function requireSession() {
     };
   }
   return { session, error: null };
+}
+
+/**
+ * 認証済みセッションとDBユーザーIDを取得する。
+ * 未認証またはユーザーレコードが存在しない場合は 401 を返す。
+ */
+export async function requireUser() {
+  const { session, error } = await requireSession();
+  if (error || !session) return { session: null, userId: null, error };
+
+  const user = await prisma.user.findUnique({
+    where: { sub: session.user.sub },
+    select: { id: true },
+  });
+  if (!user) {
+    return {
+      session: null,
+      userId: null,
+      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    };
+  }
+  return { session, userId: user.id, error: null };
 }

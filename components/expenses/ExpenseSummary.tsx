@@ -41,7 +41,7 @@ export function ExpenseSummary({ summary }: Props) {
             </thead>
             <tbody>
               {summary.breakdown.map((b) => (
-                <tr key={b.userSub} className="border-b">
+                <tr key={b.userId} className="border-b">
                   <td className="py-2 pr-4">{b.nickname}</td>
                   <td className="py-2 pr-4 text-right">¥{b.paidAmount.toLocaleString()}</td>
                   <td

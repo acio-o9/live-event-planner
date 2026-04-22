@@ -6,7 +6,7 @@ describe("Expense 型定義", () => {
       const expense: Expense = {
         id: "expense-1",
         liveEventId: "event-1",
-        paidBy: "user-sub-1",
+        paidBy: "user-id-1",
         paidByName: "taro",
         amount: 5000,
         category: "会場費",
@@ -22,7 +22,7 @@ describe("Expense 型定義", () => {
       const expense: Expense = {
         id: "expense-2",
         liveEventId: "event-1",
-        paidBy: "user-sub-1",
+        paidBy: "user-id-1",
         paidByName: "taro",
         amount: 1500,
         category: "飲食費",
@@ -37,7 +37,7 @@ describe("Expense 型定義", () => {
   describe("ExpenseFormData", () => {
     it("フォーム送信に必要なフィールドを持つ", () => {
       const formData: ExpenseFormData = {
-        paidBy: "user-sub-1",
+        paidBy: "user-id-1",
         amount: 3000,
         category: "機材費",
         description: "マイク代",
@@ -54,9 +54,9 @@ describe("Expense 型定義", () => {
         participantCount: 3,
         perPersonAmount: 5000,
         breakdown: [
-          { userSub: "sub-1", nickname: "taro", paidAmount: 15000, balance: 10000 },
-          { userSub: "sub-2", nickname: "jiro", paidAmount: 0, balance: -5000 },
-          { userSub: "sub-3", nickname: "saburo", paidAmount: 0, balance: -5000 },
+          { userId: "uid-1", nickname: "taro", paidAmount: 15000, balance: 10000 },
+          { userId: "uid-2", nickname: "jiro", paidAmount: 0, balance: -5000 },
+          { userId: "uid-3", nickname: "saburo", paidAmount: 0, balance: -5000 },
         ],
       };
       expect(summary.totalAmount).toBe(15000);
@@ -69,9 +69,9 @@ describe("Expense 型定義", () => {
         participantCount: 3,
         perPersonAmount: 3000,
         breakdown: [
-          { userSub: "sub-1", nickname: "taro", paidAmount: 9000, balance: 6000 },
-          { userSub: "sub-2", nickname: "jiro", paidAmount: 0, balance: -3000 },
-          { userSub: "sub-3", nickname: "saburo", paidAmount: 0, balance: -3000 },
+          { userId: "uid-1", nickname: "taro", paidAmount: 9000, balance: 6000 },
+          { userId: "uid-2", nickname: "jiro", paidAmount: 0, balance: -3000 },
+          { userId: "uid-3", nickname: "saburo", paidAmount: 0, balance: -3000 },
         ],
       };
       const totalBalance = summary.breakdown.reduce((sum, b) => sum + b.balance, 0);

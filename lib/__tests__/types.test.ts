@@ -17,6 +17,7 @@ describe("ドメインモデル型定義", () => {
   describe("User", () => {
     it("必須フィールドのみで作成できる", () => {
       const user: User = {
+        id: "uuid-1",
         sub: "google-sub-12345",
         nickname: "テストユーザー",
         instruments: [],
@@ -29,6 +30,7 @@ describe("ドメインモデル型定義", () => {
 
     it("avatarUrl はオプショナル", () => {
       const userWithAvatar: User = {
+        id: "uuid-2",
         sub: "sub-1",
         nickname: "Alice",
         avatarUrl: "https://example.com/avatar.jpg",
@@ -78,13 +80,13 @@ describe("ドメインモデル型定義", () => {
       expect(eventBand.snapshotTakenAt).toBeUndefined();
     });
 
-    it("MemberSnapshot は userSub・nickname・role を持つ", () => {
+    it("MemberSnapshot は userId・nickname・role を持つ", () => {
       const snapshot: MemberSnapshot = {
-        userSub: "user-sub-1",
+        userId: "user-id-1",
         nickname: "Alice (当時)",
         role: "leader",
       };
-      expect(snapshot.userSub).toBeDefined();
+      expect(snapshot.userId).toBeDefined();
       expect(snapshot.nickname).toBeDefined();
     });
   });
@@ -124,7 +126,7 @@ describe("ドメインモデル型定義", () => {
       expect(bandTask.eventBandId).toBe("eb-1");
     });
 
-    it("Task.assigneeUserSub はオプショナル（未アサイン可）", () => {
+    it("Task.assigneeUserId はオプショナル（未アサイン可）", () => {
       const task: Task = {
         id: "task-3",
         milestoneId: "ms-1",
@@ -132,7 +134,7 @@ describe("ドメインモデル型定義", () => {
         status: "pending",
         order: 1,
       };
-      expect(task.assigneeUserSub).toBeUndefined();
+      expect(task.assigneeUserId).toBeUndefined();
     });
   });
 

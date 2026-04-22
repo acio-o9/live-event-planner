@@ -24,8 +24,8 @@ export async function PUT(
     where: { id: params.taskId },
     data: {
       ...(body.title !== undefined && { title: body.title.trim() }),
-      ...(body.assigneeUserSub !== undefined && {
-        assigneeUserSub: body.assigneeUserSub ?? null,
+      ...(body.assigneeUserId !== undefined && {
+        assigneeUserId: body.assigneeUserId ?? null,
       }),
       ...(body.status !== undefined && { status: body.status }),
     },

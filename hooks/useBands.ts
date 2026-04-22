@@ -33,8 +33,8 @@ export function useBands(liveEventId: string) {
     return bandsApi.addMember(liveEventId, eventBandId, data);
   }, [liveEventId]);
 
-  const removeMember = useCallback(async (eventBandId: string, userSub: string): Promise<EventBand> => {
-    return bandsApi.removeMember(liveEventId, eventBandId, userSub);
+  const removeMember = useCallback(async (eventBandId: string, userId: string): Promise<EventBand> => {
+    return bandsApi.removeMember(liveEventId, eventBandId, userId);
   }, [liveEventId]);
 
   return { isLoading, error, create, update, remove, addMember, removeMember };

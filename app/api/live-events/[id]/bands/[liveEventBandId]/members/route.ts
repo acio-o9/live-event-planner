@@ -20,12 +20,12 @@ export async function POST(
   }
 
   const body: AddEventBandMemberRequest = await request.json();
-  if (!body.userSub) {
-    return Response.json({ error: "userSub is required" }, { status: 400 });
+  if (!body.userId) {
+    return Response.json({ error: "userId is required" }, { status: 400 });
   }
 
   const alreadyMember = await prisma.eventBandMember.findUnique({
-    where: { eventBandId_userSub: { eventBandId: params.liveEventBandId, userSub: body.userSub } },
+    where: { eventBandId_userId: { eventBandId: params.liveEventBandId, userId: body.userId } },
   });
   if (alreadyMember) {
     return Response.json({ error: "Already a member" }, { status: 409 });
@@ -34,7 +34,7 @@ export async function POST(
   await prisma.eventBandMember.create({
     data: {
       eventBandId: params.liveEventBandId,
-      userSub: body.userSub,
+      userId: body.userId,
       role: body.role ?? "member",
     },
   });

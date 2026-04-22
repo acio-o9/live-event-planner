@@ -4,7 +4,7 @@ import { ExpenseForm } from "./ExpenseForm";
 import { CreateExpenseRequest, Expense } from "@/lib/types";
 
 interface Props {
-  participants: { userSub: string; nickname: string }[];
+  participants: { userId: string; nickname: string }[];
   initialData?: Expense;
   onSubmit: (data: CreateExpenseRequest) => Promise<void>;
   onClose: () => void;

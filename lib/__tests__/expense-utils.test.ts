@@ -1,9 +1,9 @@
 import { calcExpenseSummary } from "../expense-utils";
 
 const PARTICIPANTS = [
-  { userSub: "sub-1", nickname: "taro" },
-  { userSub: "sub-2", nickname: "jiro" },
-  { userSub: "sub-3", nickname: "saburo" },
+  { userId: "uid-1", nickname: "taro" },
+  { userId: "uid-2", nickname: "jiro" },
+  { userId: "uid-3", nickname: "saburo" },
 ];
 
 describe("calcExpenseSummary", () => {
@@ -16,8 +16,8 @@ describe("calcExpenseSummary", () => {
 
     it("合計金額が正しく計算される", () => {
       const expenses = [
-        { paidBy: "sub-1", paidByNickname: "taro", amount: 5000 },
-        { paidBy: "sub-2", paidByNickname: "jiro", amount: 3000 },
+        { paidBy: "uid-1", paidByNickname: "taro", amount: 5000 },
+        { paidBy: "uid-2", paidByNickname: "jiro", amount: 3000 },
       ];
       const result = calcExpenseSummary(expenses, PARTICIPANTS);
       expect(result.totalAmount).toBe(8000);
@@ -25,7 +25,7 @@ describe("calcExpenseSummary", () => {
 
     it("一人当たり負担額 = 合計 ÷ 参加人数（端数切り上げ）", () => {
       const expenses = [
-        { paidBy: "sub-1", paidByNickname: "taro", amount: 10000 },
+        { paidBy: "uid-1", paidByNickname: "taro", amount: 10000 },
       ];
       // 10000 ÷ 3 = 3333.33... → 切り上げ 3334
       const result = calcExpenseSummary(expenses, PARTICIPANTS);
@@ -34,7 +34,7 @@ describe("calcExpenseSummary", () => {
 
     it("割り切れる場合は端数なし", () => {
       const expenses = [
-        { paidBy: "sub-1", paidByNickname: "taro", amount: 9000 },
+        { paidBy: "uid-1", paidByNickname: "taro", amount: 9000 },
       ];
       const result = calcExpenseSummary(expenses, PARTICIPANTS);
       expect(result.perPersonAmount).toBe(3000);
@@ -47,7 +47,7 @@ describe("calcExpenseSummary", () => {
 
     it("参加者がいない場合は1人として計算（ゼロ除算回避）", () => {
       const expenses = [
-        { paidBy: "sub-1", paidByNickname: "taro", amount: 3000 },
+        { paidBy: "uid-1", paidByNickname: "taro", amount: 3000 },
       ];
       const result = calcExpenseSummary(expenses, []);
       expect(result.participantCount).toBe(1);
@@ -58,48 +58,48 @@ describe("calcExpenseSummary", () => {
   describe("精算差額（breakdown）", () => {
     it("立替者の balance は正（受け取り）", () => {
       const expenses = [
-        { paidBy: "sub-1", paidByNickname: "taro", amount: 9000 },
+        { paidBy: "uid-1", paidByNickname: "taro", amount: 9000 },
       ];
       // 一人当たり 3000円、taro は 9000円立替 → balance = 9000 - 3000 = +6000
       const result = calcExpenseSummary(expenses, PARTICIPANTS);
-      const taro = result.breakdown.find((b) => b.userSub === "sub-1");
+      const taro = result.breakdown.find((b) => b.userId === "uid-1");
       expect(taro?.balance).toBe(6000);
     });
 
     it("立て替えていない参加者の balance は負（支払い）", () => {
       const expenses = [
-        { paidBy: "sub-1", paidByNickname: "taro", amount: 9000 },
+        { paidBy: "uid-1", paidByNickname: "taro", amount: 9000 },
       ];
       // saburo は0円立替 → balance = 0 - 3000 = -3000
       const result = calcExpenseSummary(expenses, PARTICIPANTS);
-      const saburo = result.breakdown.find((b) => b.userSub === "sub-3");
+      const saburo = result.breakdown.find((b) => b.userId === "uid-3");
       expect(saburo?.balance).toBe(-3000);
     });
 
     it("複数費用を立て替えた場合は合算される", () => {
       const expenses = [
-        { paidBy: "sub-1", paidByNickname: "taro", amount: 3000 },
-        { paidBy: "sub-1", paidByNickname: "taro", amount: 2000 },
+        { paidBy: "uid-1", paidByNickname: "taro", amount: 3000 },
+        { paidBy: "uid-1", paidByNickname: "taro", amount: 2000 },
       ];
       const result = calcExpenseSummary(expenses, PARTICIPANTS);
-      const taro = result.breakdown.find((b) => b.userSub === "sub-1");
+      const taro = result.breakdown.find((b) => b.userId === "uid-1");
       expect(taro?.paidAmount).toBe(5000);
     });
 
     it("breakdown に全参加者が含まれる", () => {
       const result = calcExpenseSummary([], PARTICIPANTS);
       expect(result.breakdown).toHaveLength(3);
-      expect(result.breakdown.map((b) => b.userSub)).toEqual(
-        expect.arrayContaining(["sub-1", "sub-2", "sub-3"])
+      expect(result.breakdown.map((b) => b.userId)).toEqual(
+        expect.arrayContaining(["uid-1", "uid-2", "uid-3"])
       );
     });
 
     it("立て替えていない参加者の paidAmount は 0", () => {
       const expenses = [
-        { paidBy: "sub-1", paidByNickname: "taro", amount: 9000 },
+        { paidBy: "uid-1", paidByNickname: "taro", amount: 9000 },
       ];
       const result = calcExpenseSummary(expenses, PARTICIPANTS);
-      const jiro = result.breakdown.find((b) => b.userSub === "sub-2");
+      const jiro = result.breakdown.find((b) => b.userId === "uid-2");
       expect(jiro?.paidAmount).toBe(0);
     });
   });
@@ -107,9 +107,9 @@ describe("calcExpenseSummary", () => {
   describe("全員が均等に立て替えた場合", () => {
     it("全員の balance が 0", () => {
       const expenses = [
-        { paidBy: "sub-1", paidByNickname: "taro", amount: 3000 },
-        { paidBy: "sub-2", paidByNickname: "jiro", amount: 3000 },
-        { paidBy: "sub-3", paidByNickname: "saburo", amount: 3000 },
+        { paidBy: "uid-1", paidByNickname: "taro", amount: 3000 },
+        { paidBy: "uid-2", paidByNickname: "jiro", amount: 3000 },
+        { paidBy: "uid-3", paidByNickname: "saburo", amount: 3000 },
       ];
       const result = calcExpenseSummary(expenses, PARTICIPANTS);
       result.breakdown.forEach((b) => {

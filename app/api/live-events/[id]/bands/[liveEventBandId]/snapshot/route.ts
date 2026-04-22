@@ -30,7 +30,7 @@ export async function POST(
     await tx.memberSnapshot.createMany({
       data: eventBand.members.map((m) => ({
         eventBandId: params.liveEventBandId,
-        userSub: m.userSub,
+        userId: m.userId,
         nickname: m.user.nickname,
         role: m.role,
       })),
