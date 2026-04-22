@@ -157,6 +157,10 @@ export interface AddEventBandMemberRequest {
   role: "leader" | "member";
 }
 
+export interface UpdateBandLeaderRequest {
+  userSub: string;
+}
+
 // --- Live Event ---
 
 export interface CreateLiveEventRequest {

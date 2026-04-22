@@ -46,6 +46,16 @@ export function BandMembersModal({ liveEventId, band, onUpdate, onClose }: Props
     }
   };
 
+  const handleChangeLeader = async (userSub: string) => {
+    setError(null);
+    try {
+      const updated = await liveEventsApi.changeLeader(liveEventId, band.id, { userSub });
+      onUpdate(updated);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "バンドマスターの変更に失敗しました");
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-sm">
@@ -68,16 +78,24 @@ export function BandMembersModal({ liveEventId, band, onUpdate, onClose }: Props
                     <span className="text-sm text-gray-800">
                       {m.user.nickname}
                       {m.role === "leader" && (
-                        <span className="ml-1 text-xs text-blue-500">リーダー</span>
+                        <span className="ml-1 text-xs text-blue-500">バンドマスター</span>
                       )}
                     </span>
                     {m.role !== "leader" && (
-                      <button
-                        onClick={() => handleRemove(m.userSub)}
-                        className="text-xs text-gray-400 hover:text-red-600"
-                      >
-                        削除
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleChangeLeader(m.userSub)}
+                          className="text-xs text-blue-600 hover:text-blue-800"
+                        >
+                          バンドマスターに変更
+                        </button>
+                        <button
+                          onClick={() => handleRemove(m.userSub)}
+                          className="text-xs text-gray-400 hover:text-red-600"
+                        >
+                          削除
+                        </button>
+                      </div>
                     )}
                   </li>
                 ))}

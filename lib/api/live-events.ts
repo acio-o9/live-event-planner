@@ -8,6 +8,7 @@ import {
   UpdateMilestoneRequest,
   CreateEventBandRequest,
   AddEventBandMemberRequest,
+  UpdateBandLeaderRequest,
 } from "@/lib/types";
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
@@ -77,6 +78,12 @@ export const liveEventsApi = {
   removeMember: (id: string, eventBandId: string, userSub: string) =>
     fetchJson<EventBand>(`/api/live-events/${id}/bands/${eventBandId}/members/${encodeURIComponent(userSub)}`, {
       method: "DELETE",
+    }),
+
+  changeLeader: (id: string, eventBandId: string, data: UpdateBandLeaderRequest) =>
+    fetchJson<EventBand>(`/api/live-events/${id}/bands/${eventBandId}/leader`, {
+      method: "PUT",
+      body: JSON.stringify(data),
     }),
 
   listUsers: () => fetchJson<User[]>("/api/users"),
