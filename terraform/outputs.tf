@@ -13,8 +13,8 @@ output "ecs_cluster_name" {
   value       = aws_ecs_cluster.main.name
 }
 
-output "aurora_endpoint" {
-  description = "Aurora cluster endpoint"
-  value       = aws_rds_cluster.aurora.endpoint
+output "rds_endpoint" {
+  description = "RDS PostgreSQL endpoint"
+  value       = aws_db_instance.rds.address
   sensitive   = true
 }
