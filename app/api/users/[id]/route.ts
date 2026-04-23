@@ -1,19 +1,6 @@
 import { requireSession } from "@/lib/api/session";
 import { prisma } from "@/lib/prisma";
 import { serializeUser, userInclude } from "@/lib/db/serializers";
-import { randomUUID } from "crypto";
-
-export async function GET() {
-  const { error } = await requireSession();
-  if (error) return error;
-
-  const users = await prisma.user.findMany({
-    where: { deletedAt: null },
-    orderBy: { nickname: "asc" },
-    include: userInclude,
-  });
-  return Response.json(users.map(serializeUser));
-}
 
 // 全角換算文字数カウント（全角=1、半角=0.5）
 function countWidth(str: string): number {
@@ -24,9 +11,14 @@ function countWidth(str: string): number {
   return width;
 }
 
-export async function POST(request: Request) {
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const { error } = await requireSession();
   if (error) return error;
+
+  const { id } = await params;
 
   let body: unknown;
   try {
@@ -48,13 +40,38 @@ export async function POST(request: Request) {
     return Response.json({ error: "ニックネームは全角10文字以内で入力してください" }, { status: 400 });
   }
 
-  const user = await prisma.user.create({
-    data: {
-      sub: `dummy-${randomUUID()}`,
-      nickname: trimmed,
-    },
+  const existing = await prisma.user.findUnique({ where: { id } });
+  if (!existing || existing.deletedAt !== null) {
+    return Response.json({ error: "ユーザーが見つかりません" }, { status: 404 });
+  }
+
+  const user = await prisma.user.update({
+    where: { id },
+    data: { nickname: trimmed },
     include: userInclude,
   });
 
-  return Response.json(serializeUser(user), { status: 201 });
+  return Response.json(serializeUser(user));
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { error } = await requireSession();
+  if (error) return error;
+
+  const { id } = await params;
+
+  const existing = await prisma.user.findUnique({ where: { id } });
+  if (!existing || existing.deletedAt !== null) {
+    return Response.json({ error: "ユーザーが見つかりません" }, { status: 404 });
+  }
+
+  await prisma.user.update({
+    where: { id },
+    data: { deletedAt: new Date() },
+  });
+
+  return Response.json({ ok: true });
 }

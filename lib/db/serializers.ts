@@ -51,6 +51,7 @@ type PrismaUser = {
   sub: string;
   nickname: string;
   avatarUrl: string | null;
+  deletedAt: Date | null;
   createdAt: Date;
   instruments?: PrismaUserInstrument[];
 };
@@ -146,6 +147,7 @@ export function serializeUser(u: PrismaUser): User {
     instruments: (u.instruments ?? [])
       .map((ui) => serializeInstrument(ui.instrument))
       .sort((a, b) => a.order - b.order),
+    deletedAt: u.deletedAt ? u.deletedAt.toISOString() : null,
     createdAt: u.createdAt.toISOString(),
   };
 }

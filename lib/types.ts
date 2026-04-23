@@ -9,6 +9,7 @@ export interface User {
   nickname: string;
   avatarUrl?: string;
   instruments: Instrument[];
+  deletedAt: string | null;
   createdAt: string;
 }
 
