@@ -27,7 +27,7 @@ export async function GET() {
   const user = await prisma.user.upsert({
     where: { sub: session.user.sub },
     update: {
-      nickname: session.user.nickname,
+      // nickname はユーザーが設定した値を保持するため更新しない
       avatarUrl: session.user.avatarUrl ?? null,
     },
     create: {
