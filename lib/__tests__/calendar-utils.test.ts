@@ -74,7 +74,7 @@ describe("schedulesForDate", () => {
 
   it("handles multiple schedules on same date", () => {
     const s1 = { ...makeSchedule("2026-03-20T10:00:00Z"), id: "s1" };
-    const s2 = { ...makeSchedule("2026-03-20T15:00:00Z"), id: "s2" };
+    const s2 = { ...makeSchedule("2026-03-20T05:00:00Z"), id: "s2" };
     const s3 = { ...makeSchedule("2026-03-21T10:00:00Z"), id: "s3" };
     const result = schedulesForDate([s1, s2, s3], new Date("2026-03-20"));
     expect(result).toHaveLength(2);
