@@ -4,9 +4,11 @@ import type { User } from "@/lib/types";
 
 interface Props {
   members: User[];
+  onEdit?: (member: User) => void;
+  onDelete?: (member: User) => void;
 }
 
-export function MemberList({ members }: Props) {
+export function MemberList({ members, onEdit, onDelete }: Props) {
   if (members.length === 0) {
     return <p className="text-gray-500 text-sm py-4">該当するメンバーがいません</p>;
   }
@@ -42,6 +44,26 @@ export function MemberList({ members }: Props) {
               </div>
             )}
           </div>
+          {(onEdit || onDelete) && (
+            <div className="flex items-center gap-1 shrink-0">
+              {onEdit && (
+                <button
+                  onClick={() => onEdit(member)}
+                  className="px-2 py-1 text-xs text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+                >
+                  編集
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  onClick={() => onDelete(member)}
+                  className="px-2 py-1 text-xs text-red-600 border border-red-300 rounded hover:bg-red-50"
+                >
+                  削除
+                </button>
+              )}
+            </div>
+          )}
         </li>
       ))}
     </ul>

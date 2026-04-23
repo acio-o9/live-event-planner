@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { InstrumentFilter } from "@/components/profile/InstrumentFilter";
 import { MemberList } from "@/components/profile/MemberList";
+import { MemberAddModal } from "@/components/profile/MemberAddModal";
+import { MemberEditModal } from "@/components/profile/MemberEditModal";
+import { MemberDeleteDialog } from "@/components/profile/MemberDeleteDialog";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import type { User, Instrument } from "@/lib/types";
 
@@ -13,6 +16,10 @@ function MembersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedInstrumentId, setSelectedInstrumentId] = useState<string | null>(null);
+
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [editingMember, setEditingMember] = useState<User | null>(null);
+  const [deletingMember, setDeletingMember] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,13 +48,37 @@ function MembersPage() {
     fetchData();
   }, []);
 
+  const handleAdded = (user: User) => {
+    setMembers((prev) => [...prev, user].sort((a, b) => a.nickname.localeCompare(b.nickname, "ja")));
+  };
+
+  const handleUpdated = (updated: User) => {
+    setMembers((prev) =>
+      prev
+        .map((m) => (m.id === updated.id ? updated : m))
+        .sort((a, b) => a.nickname.localeCompare(b.nickname, "ja"))
+    );
+  };
+
+  const handleDeleted = (id: string) => {
+    setMembers((prev) => prev.filter((m) => m.id !== id));
+  };
+
   const filtered = selectedInstrumentId
     ? members.filter((m) => m.instruments.some((i) => i.id === selectedInstrumentId))
     : members;
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">メンバー一覧</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">メンバー一覧</h1>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700"
+        >
+          メンバーを追加
+        </button>
+      </div>
 
       {isLoading ? (
         <div className="flex justify-center py-8">
@@ -62,8 +93,33 @@ function MembersPage() {
             selected={selectedInstrumentId}
             onChange={setSelectedInstrumentId}
           />
-          <MemberList members={filtered} />
+          <MemberList
+            members={filtered}
+            onEdit={setEditingMember}
+            onDelete={setDeletingMember}
+          />
         </>
+      )}
+
+      {showAddModal && (
+        <MemberAddModal
+          onClose={() => setShowAddModal(false)}
+          onAdded={handleAdded}
+        />
+      )}
+      {editingMember && (
+        <MemberEditModal
+          member={editingMember}
+          onClose={() => setEditingMember(null)}
+          onUpdated={handleUpdated}
+        />
+      )}
+      {deletingMember && (
+        <MemberDeleteDialog
+          member={deletingMember}
+          onClose={() => setDeletingMember(null)}
+          onDeleted={handleDeleted}
+        />
       )}
     </div>
   );
