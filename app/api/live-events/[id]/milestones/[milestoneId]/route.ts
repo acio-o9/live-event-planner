@@ -32,3 +32,23 @@ export async function PUT(
 
   return Response.json(serializeMilestone(updated));
 }
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: { id: string; milestoneId: string } }
+) {
+  const { error } = await requireSession();
+  if (error) return error;
+
+  const milestone = await prisma.milestone.findUnique({
+    where: { id: params.milestoneId },
+    select: { id: true, liveEventId: true },
+  });
+  if (!milestone || milestone.liveEventId !== params.id) {
+    return Response.json({ error: "Milestone not found" }, { status: 404 });
+  }
+
+  await prisma.milestone.delete({ where: { id: params.milestoneId } });
+
+  return new Response(null, { status: 204 });
+}

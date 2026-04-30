@@ -5,6 +5,7 @@ import {
   User,
   CreateLiveEventRequest,
   UpdateLiveEventRequest,
+  CreateMilestoneRequest,
   UpdateMilestoneRequest,
   CreateEventBandRequest,
   AddEventBandMemberRequest,
@@ -45,10 +46,21 @@ export const liveEventsApi = {
   listMilestones: (id: string) =>
     fetchJson<Milestone[]>(`/api/live-events/${id}/milestones`),
 
+  createMilestone: (id: string, data: CreateMilestoneRequest) =>
+    fetchJson<Milestone>(`/api/live-events/${id}/milestones`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
   updateMilestone: (id: string, milestoneId: string, data: UpdateMilestoneRequest) =>
     fetchJson<Milestone>(`/api/live-events/${id}/milestones/${milestoneId}`, {
       method: "PUT",
       body: JSON.stringify(data),
+    }),
+
+  deleteMilestone: (id: string, milestoneId: string) =>
+    fetchJson<void>(`/api/live-events/${id}/milestones/${milestoneId}`, {
+      method: "DELETE",
     }),
 
   // Band

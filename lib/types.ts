@@ -183,6 +183,11 @@ export interface UpdateLiveEventRequest {
   status?: LiveEvent["status"];
 }
 
+export interface CreateMilestoneRequest {
+  title: string;
+  dueDate?: string;
+}
+
 export interface UpdateMilestoneRequest {
   title?: string;
   dueDate?: string;

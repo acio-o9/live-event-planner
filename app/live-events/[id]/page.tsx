@@ -10,7 +10,7 @@ import { EventBandFormModal } from "@/components/live-events/EventBandFormModal"
 import { BandMembersModal } from "@/components/live-events/BandMembersModal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { liveEventsApi } from "@/lib/api/live-events";
-import { LiveEvent, EventBand, LiveEventDetailTab } from "@/lib/types";
+import { LiveEvent, EventBand, LiveEventDetailTab, CreateMilestoneRequest, UpdateMilestoneRequest } from "@/lib/types";
 import Link from "next/link";
 
 function LiveEventDetailPage() {
@@ -59,6 +59,34 @@ function LiveEventDetailPage() {
               m.id === milestoneId ? { ...m, status } : m
             ),
           }
+        : prev
+    );
+  };
+
+  const handleMilestoneAdd = async (data: CreateMilestoneRequest) => {
+    const created = await liveEventsApi.createMilestone(id, data);
+    setEvent((prev) =>
+      prev ? { ...prev, milestones: [...prev.milestones, created] } : prev
+    );
+  };
+
+  const handleMilestoneEdit = async (milestoneId: string, data: UpdateMilestoneRequest) => {
+    const updated = await liveEventsApi.updateMilestone(id, milestoneId, data);
+    setEvent((prev) =>
+      prev
+        ? {
+            ...prev,
+            milestones: prev.milestones.map((m) => (m.id === milestoneId ? updated : m)),
+          }
+        : prev
+    );
+  };
+
+  const handleMilestoneDelete = async (milestoneId: string) => {
+    await liveEventsApi.deleteMilestone(id, milestoneId);
+    setEvent((prev) =>
+      prev
+        ? { ...prev, milestones: prev.milestones.filter((m) => m.id !== milestoneId) }
         : prev
     );
   };
@@ -159,6 +187,9 @@ function LiveEventDetailPage() {
             milestones={event.milestones}
             liveEventId={id}
             onMilestoneStatusChange={handleMilestoneStatusChange}
+            onMilestoneAdd={handleMilestoneAdd}
+            onMilestoneEdit={handleMilestoneEdit}
+            onMilestoneDelete={handleMilestoneDelete}
           />
         </section>
       )}
