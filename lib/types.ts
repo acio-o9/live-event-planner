@@ -28,6 +28,8 @@ export interface ProfileUpdateFormData {
 // Live Event
 // ============================================================
 
+export type LiveEventDetailTab = "bands" | "milestones" | "expenses";
+
 export interface LiveEvent {
   id: string;
   title: string;

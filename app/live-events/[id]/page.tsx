@@ -1,19 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { MilestoneList } from "@/components/live-events/MilestoneList";
+import { LiveEventDetailTabs } from "@/components/live-events/LiveEventDetailTabs";
+import { ExpenseTab } from "@/components/live-events/ExpenseTab";
 import { EventBandFormModal } from "@/components/live-events/EventBandFormModal";
 import { BandMembersModal } from "@/components/live-events/BandMembersModal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { liveEventsApi } from "@/lib/api/live-events";
-import { LiveEvent, EventBand } from "@/lib/types";
+import { LiveEvent, EventBand, LiveEventDetailTab } from "@/lib/types";
 import Link from "next/link";
 
 function LiveEventDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tab = (searchParams.get("tab") ?? "bands") as LiveEventDetailTab;
+
   const [event, setEvent] = useState<LiveEvent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,6 +33,10 @@ function LiveEventDetailPage() {
       .catch((e) => setError(e.message))
       .finally(() => setIsLoading(false));
   }, [id]);
+
+  const handleTabChange = (newTab: LiveEventDetailTab) => {
+    router.push(`/live-events/${id}?tab=${newTab}`);
+  };
 
   const handleBandDelete = async (eventBandId: string) => {
     if (!confirm("このバンドをイベントから削除しますか？")) return;
@@ -87,58 +96,74 @@ function LiveEventDetailPage() {
         </div>
       </div>
 
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-gray-700">参加バンド</h2>
-          <button
-            onClick={() => setShowAddBand(true)}
-            className="text-sm text-blue-600 hover:underline"
-          >
-            + バンドを追加
-          </button>
-        </div>
-        {event.bands.length === 0 ? (
-          <p className="text-gray-400 text-sm">まだ参加バンドがいません</p>
-        ) : (
-          <ul className="space-y-2">
-            {event.bands.map((b) => (
-              <li key={b.id} className="flex items-center gap-2 bg-white border border-gray-200 rounded px-3 py-2">
-                <Link
-                  href={`/live-events/${id}/setlist?band=${b.id}`}
-                  className="text-sm font-medium text-gray-800 hover:text-blue-600 flex-1"
-                >
-                  {b.name}
-                  {b.snapshotTakenAt && (
-                    <span className="ml-1 text-xs text-green-500">✓</span>
+      <LiveEventDetailTabs activeTab={tab} onTabChange={handleTabChange} />
+
+      {tab === "bands" && (
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold text-gray-700">参加バンド</h2>
+            <button
+              onClick={() => setShowAddBand(true)}
+              className="text-sm text-blue-600 hover:underline"
+            >
+              + バンドを追加
+            </button>
+          </div>
+          {event.bands.length === 0 ? (
+            <p className="text-gray-400 text-sm">まだ参加バンドがいません</p>
+          ) : (
+            <ul className="space-y-2">
+              {event.bands.map((b) => (
+                <li key={b.id} className="flex items-center gap-2 bg-white border border-gray-200 rounded px-3 py-2">
+                  <Link
+                    href={`/live-events/${id}/setlist?band=${b.id}`}
+                    className="text-sm font-medium text-gray-800 hover:text-blue-600 flex-1"
+                  >
+                    {b.name}
+                    {b.snapshotTakenAt && (
+                      <span className="ml-1 text-xs text-green-500">✓</span>
+                    )}
+                  </Link>
+                  {b.description && (
+                    <span className="text-xs text-gray-400 flex-1">{b.description}</span>
                   )}
-                </Link>
-                {b.description && (
-                  <span className="text-xs text-gray-400 flex-1">{b.description}</span>
-                )}
-                <span className="text-xs text-gray-400">{b.members.length}人</span>
-                <button
-                  onClick={() => setManagingMembersBand(b)}
-                  className="text-xs text-gray-400 hover:text-blue-600 px-1"
-                >
-                  メンバー
-                </button>
-                <button
-                  onClick={() => setEditingBand({ id: b.id, name: b.name, description: b.description })}
-                  className="text-xs text-gray-400 hover:text-blue-600 px-1"
-                >
-                  編集
-                </button>
-                <button
-                  onClick={() => handleBandDelete(b.id)}
-                  className="text-xs text-gray-400 hover:text-red-600 px-1"
-                >
-                  削除
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                  <span className="text-xs text-gray-400">{b.members.length}人</span>
+                  <button
+                    onClick={() => setManagingMembersBand(b)}
+                    className="text-xs text-gray-400 hover:text-blue-600 px-1"
+                  >
+                    メンバー
+                  </button>
+                  <button
+                    onClick={() => setEditingBand({ id: b.id, name: b.name, description: b.description })}
+                    className="text-xs text-gray-400 hover:text-blue-600 px-1"
+                  >
+                    編集
+                  </button>
+                  <button
+                    onClick={() => handleBandDelete(b.id)}
+                    className="text-xs text-gray-400 hover:text-red-600 px-1"
+                  >
+                    削除
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+
+      {tab === "milestones" && (
+        <section>
+          <MilestoneList
+            milestones={event.milestones}
+            liveEventId={id}
+            onMilestoneStatusChange={handleMilestoneStatusChange}
+          />
+        </section>
+      )}
+
+      {tab === "expenses" && <ExpenseTab liveEventId={id} />}
 
       {showAddBand && (
         <EventBandFormModal
@@ -183,27 +208,6 @@ function LiveEventDetailPage() {
           onClose={() => setEditingBand(null)}
         />
       )}
-
-      <section>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-gray-700">費用管理</h2>
-          <Link
-            href={`/live-events/${id}/expenses`}
-            className="text-sm text-blue-600 hover:underline"
-          >
-            費用を管理 →
-          </Link>
-        </div>
-      </section>
-
-      <section>
-        <h2 className="text-lg font-semibold text-gray-700 mb-3">マイルストーン</h2>
-        <MilestoneList
-          milestones={event.milestones}
-          liveEventId={id}
-          onMilestoneStatusChange={handleMilestoneStatusChange}
-        />
-      </section>
     </div>
   );
 }
@@ -211,7 +215,9 @@ function LiveEventDetailPage() {
 export default function Page() {
   return (
     <AuthGuard>
-      <LiveEventDetailPage />
+      <Suspense fallback={<div className="flex justify-center py-16"><LoadingSpinner /></div>}>
+        <LiveEventDetailPage />
+      </Suspense>
     </AuthGuard>
   );
 }
