@@ -85,12 +85,14 @@ function MembersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">メンバー一覧</h1>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700"
-        >
-          メンバーを追加
-        </button>
+        {canManageEvent && (
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="px-4 py-2 text-sm text-white bg-blue-600 rounded-md hover:bg-blue-700"
+          >
+            メンバーを追加
+          </button>
+        )}
       </div>
 
       {isLoading ? (

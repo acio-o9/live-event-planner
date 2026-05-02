@@ -8,13 +8,19 @@ import { canManageEvent as checkCanManageEvent, isAdmin as checkIsAdmin } from "
 export function useAuth() {
   const { data: session, status } = useSession();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isUserLoading, setIsUserLoading] = useState(true);
 
   useEffect(() => {
-    if (status !== "authenticated") return;
+    if (status === "loading") return;
+    if (status === "unauthenticated") {
+      setIsUserLoading(false);
+      return;
+    }
     fetch("/api/users/me")
       .then((res) => (res.ok ? res.json() : null))
       .then((user: User | null) => setCurrentUser(user))
-      .catch(() => setCurrentUser(null));
+      .catch(() => setCurrentUser(null))
+      .finally(() => setIsUserLoading(false));
   }, [status]);
 
   const role = currentUser?.role ?? "user";
@@ -24,7 +30,7 @@ export function useAuth() {
     user: session?.user ?? null,
     currentUser,
     isAuthenticated: status === "authenticated",
-    isLoading: status === "loading",
+    isLoading: status === "loading" || isUserLoading,
     isAdmin: permUser ? checkIsAdmin(permUser) : false,
     canManageEvent: permUser ? checkCanManageEvent(permUser) : false,
     signIn: () => signIn("google"),
