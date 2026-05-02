@@ -1,4 +1,5 @@
-import { requireSession } from "@/lib/api/session";
+import { requireUser } from "@/lib/api/session";
+import { isAdmin } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { serializeUser, userInclude } from "@/lib/db/serializers";
 
@@ -15,10 +16,14 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error } = await requireSession();
+  const { userId, role, error } = await requireUser();
   if (error) return error;
 
   const { id } = await params;
+
+  if (!isAdmin({ id: userId, role }) && userId !== id) {
+    return Response.json({ error: "権限がありません" }, { status: 403 });
+  }
 
   let body: unknown;
   try {
@@ -58,10 +63,14 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { error } = await requireSession();
+  const { userId, role, error } = await requireUser();
   if (error) return error;
 
   const { id } = await params;
+
+  if (!isAdmin({ id: userId, role })) {
+    return Response.json({ error: "権限がありません" }, { status: 403 });
+  }
 
   const existing = await prisma.user.findUnique({ where: { id } });
   if (!existing || existing.deletedAt !== null) {

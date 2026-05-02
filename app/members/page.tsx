@@ -12,7 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import type { User, Instrument, UserRole } from "@/lib/types";
 
 function MembersPage() {
-  const { isAdmin, canManageEvent } = useAuth();
+  const { isAdmin, canManageEvent, currentUser } = useAuth();
   const [members, setMembers] = useState<User[]>([]);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -112,6 +112,7 @@ function MembersPage() {
             members={filtered}
             canChangeRole={canManageEvent}
             isAdmin={isAdmin}
+            currentUserId={currentUser?.id}
             onEdit={setEditingMember}
             onDelete={setDeletingMember}
             onRoleChange={handleRoleChange}

@@ -18,12 +18,13 @@ interface Props {
   members: User[];
   canChangeRole?: boolean;
   isAdmin?: boolean;
+  currentUserId?: string;
   onEdit?: (member: User) => void;
   onDelete?: (member: User) => void;
   onRoleChange?: (member: User, role: UserRole) => void;
 }
 
-export function MemberList({ members, canChangeRole, isAdmin, onEdit, onDelete, onRoleChange }: Props) {
+export function MemberList({ members, canChangeRole, isAdmin, currentUserId, onEdit, onDelete, onRoleChange }: Props) {
   if (members.length === 0) {
     return <p className="text-gray-500 text-sm py-4">該当するメンバーがいません</p>;
   }
@@ -80,26 +81,30 @@ export function MemberList({ members, canChangeRole, isAdmin, onEdit, onDelete, 
                 ))}
               </select>
             )}
-            {(onEdit || onDelete) && (
-              <div className="flex items-center gap-1">
-                {onEdit && (
-                  <button
-                    onClick={() => onEdit(member)}
-                    className="px-2 py-1 text-xs text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
-                  >
-                    編集
-                  </button>
-                )}
-                {onDelete && (
-                  <button
-                    onClick={() => onDelete(member)}
-                    className="px-2 py-1 text-xs text-red-600 border border-red-300 rounded hover:bg-red-50"
-                  >
-                    削除
-                  </button>
-                )}
-              </div>
-            )}
+            {(() => {
+              const canEdit = onEdit && (isAdmin || member.id === currentUserId);
+              const canDelete = onDelete && isAdmin;
+              return (canEdit || canDelete) ? (
+                <div className="flex items-center gap-1">
+                  {canEdit && (
+                    <button
+                      onClick={() => onEdit(member)}
+                      className="px-2 py-1 text-xs text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+                    >
+                      編集
+                    </button>
+                  )}
+                  {canDelete && (
+                    <button
+                      onClick={() => onDelete(member)}
+                      className="px-2 py-1 text-xs text-red-600 border border-red-300 rounded hover:bg-red-50"
+                    >
+                      削除
+                    </button>
+                  )}
+                </div>
+              ) : null;
+            })()}
           </div>
         </li>
       ))}
