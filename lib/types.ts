@@ -2,12 +2,15 @@
 // Domain Model Types
 // ============================================================
 
+export type UserRole = "admin" | "honki_kanrinin" | "user";
+
 // ユーザー（OIDCトークンのsubjectで識別。個人情報は持たない）
 export interface User {
   id: string;
   sub: string;
   nickname: string;
   avatarUrl?: string;
+  role: UserRole;
   instruments: Instrument[];
   deletedAt: string | null;
   createdAt: string;
@@ -163,6 +166,12 @@ export interface AddEventBandMemberRequest {
 
 export interface UpdateBandLeaderRequest {
   userId: string;
+}
+
+// --- User Role ---
+
+export interface UpdateUserRoleRequest {
+  role: UserRole;
 }
 
 // --- Live Event ---

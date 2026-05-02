@@ -1,13 +1,14 @@
-import { requireSession } from "@/lib/api/session";
+import { requireUser } from "@/lib/api/session";
 import { prisma } from "@/lib/prisma";
 import { serializeExpense } from "@/lib/db/serializers";
+import { canRegisterExpense } from "@/lib/permissions";
 import { NextRequest } from "next/server";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { error } = await requireSession();
+  const { error } = await requireUser();
   if (error) return error;
 
   const eventExists = await prisma.liveEvent.findUnique({
@@ -29,14 +30,22 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { error } = await requireSession();
+  const { userId, role, error } = await requireUser();
   if (error) return error;
 
-  const eventExists = await prisma.liveEvent.findUnique({
+  const eventExists = await prisma.liveEvent.findFirst({
     where: { id: params.id },
-    select: { id: true },
+    select: {
+      id: true,
+      bands: { select: { members: { select: { userId: true } } } },
+    },
   });
   if (!eventExists) return Response.json({ error: "Not Found" }, { status: 404 });
+
+  const bandMemberUserIds = eventExists.bands.flatMap((b) => b.members.map((m) => m.userId));
+  if (!canRegisterExpense({ id: userId!, role: role! }, bandMemberUserIds)) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const body = await request.json();
   const { paidBy, amount, category, description } = body;

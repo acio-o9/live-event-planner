@@ -10,6 +10,7 @@ import { EventBandFormModal } from "@/components/live-events/EventBandFormModal"
 import { BandMembersModal } from "@/components/live-events/BandMembersModal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { liveEventsApi } from "@/lib/api/live-events";
+import { useAuth } from "@/hooks/useAuth";
 import { LiveEvent, EventBand, LiveEventDetailTab, CreateMilestoneRequest, UpdateMilestoneRequest } from "@/lib/types";
 import Link from "next/link";
 
@@ -22,6 +23,7 @@ function LiveEventDetailPage() {
   const [event, setEvent] = useState<LiveEvent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { canManageEvent } = useAuth();
   const [showAddBand, setShowAddBand] = useState(false);
   const [editingBand, setEditingBand] = useState<{ id: string; name: string; description?: string } | null>(null);
   const [managingMembersBand, setManagingMembersBand] = useState<EventBand | null>(null);
@@ -130,12 +132,14 @@ function LiveEventDetailPage() {
         <section>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold text-gray-700">参加バンド</h2>
-            <button
-              onClick={() => setShowAddBand(true)}
-              className="text-sm text-blue-600 hover:underline"
-            >
-              + バンドを追加
-            </button>
+            {canManageEvent && (
+              <button
+                onClick={() => setShowAddBand(true)}
+                className="text-sm text-blue-600 hover:underline"
+              >
+                + バンドを追加
+              </button>
+            )}
           </div>
           {event.bands.length === 0 ? (
             <p className="text-gray-400 text-sm">まだ参加バンドがいません</p>
@@ -156,24 +160,30 @@ function LiveEventDetailPage() {
                     <span className="text-xs text-gray-400 flex-1">{b.description}</span>
                   )}
                   <span className="text-xs text-gray-400">{b.members.length}人</span>
-                  <button
-                    onClick={() => setManagingMembersBand(b)}
-                    className="text-xs text-gray-400 hover:text-blue-600 px-1"
-                  >
-                    メンバー
-                  </button>
-                  <button
-                    onClick={() => setEditingBand({ id: b.id, name: b.name, description: b.description })}
-                    className="text-xs text-gray-400 hover:text-blue-600 px-1"
-                  >
-                    編集
-                  </button>
-                  <button
-                    onClick={() => handleBandDelete(b.id)}
-                    className="text-xs text-gray-400 hover:text-red-600 px-1"
-                  >
-                    削除
-                  </button>
+                  {canManageEvent && (
+                    <button
+                      onClick={() => setManagingMembersBand(b)}
+                      className="text-xs text-gray-400 hover:text-blue-600 px-1"
+                    >
+                      メンバー
+                    </button>
+                  )}
+                  {canManageEvent && (
+                    <button
+                      onClick={() => setEditingBand({ id: b.id, name: b.name, description: b.description })}
+                      className="text-xs text-gray-400 hover:text-blue-600 px-1"
+                    >
+                      編集
+                    </button>
+                  )}
+                  {canManageEvent && (
+                    <button
+                      onClick={() => handleBandDelete(b.id)}
+                      className="text-xs text-gray-400 hover:text-red-600 px-1"
+                    >
+                      削除
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
@@ -186,6 +196,7 @@ function LiveEventDetailPage() {
           <MilestoneList
             milestones={event.milestones}
             liveEventId={id}
+            canManageEvent={canManageEvent}
             onMilestoneStatusChange={handleMilestoneStatusChange}
             onMilestoneAdd={handleMilestoneAdd}
             onMilestoneEdit={handleMilestoneEdit}

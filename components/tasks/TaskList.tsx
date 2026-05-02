@@ -9,9 +9,10 @@ interface Props {
   milestoneId: string;
   initialTasks: Task[];
   eventBandId?: string;
+  canManageEvent?: boolean;
 }
 
-export function TaskList({ liveEventId, milestoneId, initialTasks, eventBandId }: Props) {
+export function TaskList({ liveEventId, milestoneId, initialTasks, eventBandId, canManageEvent }: Props) {
   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   const [newTitle, setNewTitle] = useState("");
   const [isAdding, setIsAdding] = useState(false);
@@ -70,46 +71,50 @@ export function TaskList({ liveEventId, milestoneId, initialTasks, eventBandId }
               @{task.assigneeUserId.slice(0, 8)}
             </span>
           )}
-          <button
-            onClick={() => deleteTask(task.id)}
-            className="text-xs text-gray-300 hover:text-red-500 hidden group-hover:inline"
-          >
-            ×
-          </button>
+          {canManageEvent && (
+            <button
+              onClick={() => deleteTask(task.id)}
+              className="text-xs text-gray-300 hover:text-red-500 hidden group-hover:inline"
+            >
+              ×
+            </button>
+          )}
         </div>
       ))}
 
-      {isAdding ? (
-        <div className="flex gap-2 mt-2">
-          <input
-            type="text"
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addTask()}
-            autoFocus
-            className="flex-1 text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            placeholder="タスクを入力..."
-          />
+      {canManageEvent && (
+        isAdding ? (
+          <div className="flex gap-2 mt-2">
+            <input
+              type="text"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addTask()}
+              autoFocus
+              className="flex-1 text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="タスクを入力..."
+            />
+            <button
+              onClick={addTask}
+              className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+            >
+              追加
+            </button>
+            <button
+              onClick={() => { setIsAdding(false); setNewTitle(""); }}
+              className="text-xs text-gray-500 px-2 py-1"
+            >
+              キャンセル
+            </button>
+          </div>
+        ) : (
           <button
-            onClick={addTask}
-            className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+            onClick={() => setIsAdding(true)}
+            className="text-xs text-gray-400 hover:text-blue-600 mt-1"
           >
-            追加
+            + タスクを追加
           </button>
-          <button
-            onClick={() => { setIsAdding(false); setNewTitle(""); }}
-            className="text-xs text-gray-500 px-2 py-1"
-          >
-            キャンセル
-          </button>
-        </div>
-      ) : (
-        <button
-          onClick={() => setIsAdding(true)}
-          className="text-xs text-gray-400 hover:text-blue-600 mt-1"
-        >
-          + タスクを追加
-        </button>
+        )
       )}
     </div>
   );

@@ -3,14 +3,19 @@ import { prisma } from "@/lib/prisma";
 import { eventBandInclude, serializeEventBand } from "@/lib/db/serializers";
 import { CreateEventBandRequest } from "@/lib/types";
 import { BAND_TASK_TEMPLATES } from "@/lib/task-templates";
+import { canManageEvent } from "@/lib/permissions";
 import { NextRequest } from "next/server";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { userId, error } = await requireUser();
+  const { userId, role, error } = await requireUser();
   if (error) return error;
+
+  if (!canManageEvent({ id: userId!, role: role! })) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const eventExists = await prisma.liveEvent.findUnique({ where: { id: params.id }, select: { id: true } });
   if (!eventExists) return Response.json({ error: "Not Found" }, { status: 404 });

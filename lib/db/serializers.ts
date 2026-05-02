@@ -1,5 +1,6 @@
 import type {
   User,
+  UserRole,
   Instrument,
   EventBand,
   EventBandMember,
@@ -51,6 +52,7 @@ type PrismaUser = {
   sub: string;
   nickname: string;
   avatarUrl: string | null;
+  role: string;
   deletedAt: Date | null;
   createdAt: Date;
   instruments?: PrismaUserInstrument[];
@@ -144,6 +146,7 @@ export function serializeUser(u: PrismaUser): User {
     sub: u.sub,
     nickname: u.nickname,
     avatarUrl: u.avatarUrl ?? undefined,
+    role: u.role as UserRole,
     instruments: (u.instruments ?? [])
       .map((ui) => serializeInstrument(ui.instrument))
       .sort((a, b) => a.order - b.order),

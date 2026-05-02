@@ -1,14 +1,15 @@
-import { requireSession } from "@/lib/api/session";
+import { requireUser } from "@/lib/api/session";
 import { prisma } from "@/lib/prisma";
 import { serializeTask } from "@/lib/db/serializers";
 import { CreateTaskRequest } from "@/lib/types";
+import { canManageEvent } from "@/lib/permissions";
 import { NextRequest } from "next/server";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string; milestoneId: string } }
 ) {
-  const { error } = await requireSession();
+  const { error } = await requireUser();
   if (error) return error;
 
   const milestone = await prisma.milestone.findUnique({
@@ -37,8 +38,12 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { id: string; milestoneId: string } }
 ) {
-  const { error } = await requireSession();
+  const { userId, role, error } = await requireUser();
   if (error) return error;
+
+  if (!canManageEvent({ id: userId!, role: role! })) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const milestone = await prisma.milestone.findUnique({
     where: { id: params.milestoneId },

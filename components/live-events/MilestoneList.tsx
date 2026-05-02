@@ -7,6 +7,7 @@ import { TaskList } from "@/components/tasks/TaskList";
 interface Props {
   milestones: Milestone[];
   liveEventId: string;
+  canManageEvent?: boolean;
   onMilestoneStatusChange: (milestoneId: string, status: Milestone["status"]) => Promise<void>;
   onMilestoneAdd: (data: CreateMilestoneRequest) => Promise<void>;
   onMilestoneEdit: (milestoneId: string, data: UpdateMilestoneRequest) => Promise<void>;
@@ -47,6 +48,7 @@ interface EditFormState {
 export function MilestoneList({
   milestones,
   liveEventId,
+  canManageEvent,
   onMilestoneStatusChange,
   onMilestoneAdd,
   onMilestoneEdit,
@@ -125,14 +127,16 @@ export function MilestoneList({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <button
-          onClick={() => { setShowAddForm(true); setAddError(""); }}
-          className="text-sm px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          + マイルストーンを追加
-        </button>
-      </div>
+      {canManageEvent && (
+        <div className="flex justify-end">
+          <button
+            onClick={() => { setShowAddForm(true); setAddError(""); }}
+            className="text-sm px-3 py-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            + マイルストーンを追加
+          </button>
+        </div>
+      )}
 
       {showAddForm && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
@@ -218,31 +222,41 @@ export function MilestoneList({
                   )}
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <select
-                    value={milestone.status}
-                    onChange={(e) =>
-                      onMilestoneStatusChange(milestone.id, e.target.value as Milestone["status"])
-                    }
-                    className={`text-xs px-2 py-1 rounded-full font-medium border-0 cursor-pointer ${STATUS_COLOR[milestone.status]}`}
-                  >
-                    {(Object.keys(STATUS_LABEL) as Milestone["status"][]).map((s) => (
-                      <option key={s} value={s}>
-                        {STATUS_LABEL[s]}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    onClick={() => startEdit(milestone)}
-                    className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100"
-                  >
-                    編集
-                  </button>
-                  <button
-                    onClick={() => handleDelete(milestone.id, milestone.title)}
-                    className="text-xs text-red-500 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50"
-                  >
-                    削除
-                  </button>
+                  {canManageEvent ? (
+                    <select
+                      value={milestone.status}
+                      onChange={(e) =>
+                        onMilestoneStatusChange(milestone.id, e.target.value as Milestone["status"])
+                      }
+                      className={`text-xs px-2 py-1 rounded-full font-medium border-0 cursor-pointer ${STATUS_COLOR[milestone.status]}`}
+                    >
+                      {(Object.keys(STATUS_LABEL) as Milestone["status"][]).map((s) => (
+                        <option key={s} value={s}>
+                          {STATUS_LABEL[s]}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${STATUS_COLOR[milestone.status]}`}>
+                      {STATUS_LABEL[milestone.status]}
+                    </span>
+                  )}
+                  {canManageEvent && (
+                    <button
+                      onClick={() => startEdit(milestone)}
+                      className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded hover:bg-gray-100"
+                    >
+                      編集
+                    </button>
+                  )}
+                  {canManageEvent && (
+                    <button
+                      onClick={() => handleDelete(milestone.id, milestone.title)}
+                      className="text-xs text-red-500 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50"
+                    >
+                      削除
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -250,6 +264,7 @@ export function MilestoneList({
               liveEventId={liveEventId}
               milestoneId={milestone.id}
               initialTasks={milestone.tasks}
+              canManageEvent={canManageEvent}
             />
           </li>
         ))}

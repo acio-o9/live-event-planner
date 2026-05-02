@@ -1,12 +1,13 @@
-import { requireSession } from "@/lib/api/session";
+import { requireUser } from "@/lib/api/session";
 import { prisma } from "@/lib/prisma";
 import { liveEventInclude, serializeLiveEvent } from "@/lib/db/serializers";
 import { CreateLiveEventRequest } from "@/lib/types";
 import { MILESTONE_TEMPLATES, EVENT_TASK_TEMPLATES, calcDueDate } from "@/lib/task-templates";
+import { canManageEvent } from "@/lib/permissions";
 import { NextRequest } from "next/server";
 
 export async function GET() {
-  const { error } = await requireSession();
+  const { error } = await requireUser();
   if (error) return error;
 
   const events = await prisma.liveEvent.findMany({
@@ -18,8 +19,12 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const { session, error } = await requireSession();
+  const { userId, role, error } = await requireUser();
   if (error) return error;
+
+  if (!canManageEvent({ id: userId!, role: role! })) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const body: CreateLiveEventRequest = await request.json();
   if (!body.title?.trim()) {
@@ -27,11 +32,6 @@ export async function POST(request: NextRequest) {
   }
 
   const event = await prisma.$transaction(async (tx) => {
-    const user = await tx.user.upsert({
-      where: { sub: session.user.sub },
-      update: { nickname: session.user.nickname, avatarUrl: session.user.avatarUrl ?? null },
-      create: { sub: session.user.sub, nickname: session.user.nickname, avatarUrl: session.user.avatarUrl ?? null },
-    });
 
     const liveEvent = await tx.liveEvent.create({
       data: {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         date: body.date ? new Date(body.date) : null,
         venue: body.venue,
         status: "planning",
-        createdBy: user.id,
+        createdBy: userId!,
       },
     });
 
