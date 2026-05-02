@@ -8,9 +8,11 @@ import { MemberAddModal } from "@/components/profile/MemberAddModal";
 import { MemberEditModal } from "@/components/profile/MemberEditModal";
 import { MemberDeleteDialog } from "@/components/profile/MemberDeleteDialog";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import type { User, Instrument } from "@/lib/types";
+import { useAuth } from "@/hooks/useAuth";
+import type { User, Instrument, UserRole } from "@/lib/types";
 
 function MembersPage() {
+  const { isAdmin, canManageEvent } = useAuth();
   const [members, setMembers] = useState<User[]>([]);
   const [instruments, setInstruments] = useState<Instrument[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,6 +66,17 @@ function MembersPage() {
     setMembers((prev) => prev.filter((m) => m.id !== id));
   };
 
+  const handleRoleChange = async (member: User, role: UserRole) => {
+    const res = await fetch(`/api/users/${member.id}/role`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role }),
+    });
+    if (!res.ok) return;
+    const updated = await res.json() as User;
+    setMembers((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
+  };
+
   const filtered = selectedInstrumentId
     ? members.filter((m) => m.instruments.some((i) => i.id === selectedInstrumentId))
     : members;
@@ -95,8 +108,11 @@ function MembersPage() {
           />
           <MemberList
             members={filtered}
+            canChangeRole={canManageEvent}
+            isAdmin={isAdmin}
             onEdit={setEditingMember}
             onDelete={setDeletingMember}
+            onRoleChange={handleRoleChange}
           />
         </>
       )}

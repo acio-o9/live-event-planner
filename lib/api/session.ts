@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import type { UserRole } from "@/lib/types";
 
 /**
  * 認証済みセッションを取得する。
@@ -23,18 +24,19 @@ export async function requireSession() {
  */
 export async function requireUser() {
   const { session, error } = await requireSession();
-  if (error || !session) return { session: null, userId: null, error };
+  if (error || !session) return { session: null, userId: null, role: null as UserRole | null, error };
 
   const user = await prisma.user.findUnique({
     where: { sub: session.user.sub },
-    select: { id: true },
+    select: { id: true, role: true },
   });
   if (!user) {
     return {
       session: null,
       userId: null,
+      role: null as UserRole | null,
       error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
     };
   }
-  return { session, userId: user.id, error: null };
+  return { session, userId: user.id, role: user.role as UserRole, error: null };
 }

@@ -1,13 +1,14 @@
-import { requireSession } from "@/lib/api/session";
+import { requireUser } from "@/lib/api/session";
 import { prisma } from "@/lib/prisma";
 import { serializeExpense } from "@/lib/db/serializers";
+import { canEditExpense } from "@/lib/permissions";
 import { NextRequest } from "next/server";
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string; expenseId: string } }
 ) {
-  const { error } = await requireSession();
+  const { userId, role, error } = await requireUser();
   if (error) return error;
 
   const existing = await prisma.expense.findUnique({
@@ -15,6 +16,10 @@ export async function PUT(
   });
   if (!existing || existing.liveEventId !== params.id)
     return Response.json({ error: "Not Found" }, { status: 404 });
+
+  if (!canEditExpense({ id: userId!, role: role! }, existing.paidBy)) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const body = await request.json();
   const { paidBy, amount, category, description } = body;
@@ -40,7 +45,7 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: { id: string; expenseId: string } }
 ) {
-  const { error } = await requireSession();
+  const { userId, role, error } = await requireUser();
   if (error) return error;
 
   const existing = await prisma.expense.findUnique({
@@ -48,6 +53,10 @@ export async function DELETE(
   });
   if (!existing || existing.liveEventId !== params.id)
     return Response.json({ error: "Not Found" }, { status: 404 });
+
+  if (!canEditExpense({ id: userId!, role: role! }, existing.paidBy)) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   await prisma.expense.delete({ where: { id: params.expenseId } });
   return new Response(null, { status: 204 });

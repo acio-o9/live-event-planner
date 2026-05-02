@@ -1,15 +1,20 @@
-import { requireSession } from "@/lib/api/session";
+import { requireUser } from "@/lib/api/session";
 import { prisma } from "@/lib/prisma";
 import { serializeMilestone } from "@/lib/db/serializers";
 import { UpdateMilestoneRequest } from "@/lib/types";
+import { canManageEvent } from "@/lib/permissions";
 import { NextRequest } from "next/server";
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string; milestoneId: string } }
 ) {
-  const { error } = await requireSession();
+  const { userId, role, error } = await requireUser();
   if (error) return error;
+
+  if (!canManageEvent({ id: userId!, role: role! })) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const milestone = await prisma.milestone.findUnique({
     where: { id: params.milestoneId },
@@ -37,8 +42,12 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: { id: string; milestoneId: string } }
 ) {
-  const { error } = await requireSession();
+  const { userId, role, error } = await requireUser();
   if (error) return error;
+
+  if (!canManageEvent({ id: userId!, role: role! })) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const milestone = await prisma.milestone.findUnique({
     where: { id: params.milestoneId },

@@ -1,14 +1,15 @@
-import { requireSession } from "@/lib/api/session";
+import { requireUser } from "@/lib/api/session";
 import { prisma } from "@/lib/prisma";
 import { serializeSetlist } from "@/lib/db/serializers";
 import { UpdateSetlistRequest } from "@/lib/types";
+import { canEditSetlist } from "@/lib/permissions";
 import { NextRequest } from "next/server";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: { id: string; liveEventBandId: string } }
 ) {
-  const { error } = await requireSession();
+  const { error } = await requireUser();
   if (error) return error;
 
   const eb = await prisma.eventBand.findUnique({
@@ -32,15 +33,23 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string; liveEventBandId: string } }
 ) {
-  const { error } = await requireSession();
+  const { userId, role, error } = await requireUser();
   if (error) return error;
 
   const eb = await prisma.eventBand.findUnique({
     where: { id: params.liveEventBandId },
-    select: { liveEventId: true },
+    select: {
+      liveEventId: true,
+      members: { select: { userId: true } },
+    },
   });
   if (!eb || eb.liveEventId !== params.id) {
     return Response.json({ error: "Band not found" }, { status: 404 });
+  }
+
+  const memberUserIds = eb.members.map((m) => m.userId);
+  if (!canEditSetlist({ id: userId!, role: role! }, memberUserIds)) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const body: UpdateSetlistRequest = await request.json();

@@ -1,14 +1,15 @@
-import { requireSession } from "@/lib/api/session";
+import { requireUser } from "@/lib/api/session";
 import { prisma } from "@/lib/prisma";
 import { serializeMilestone } from "@/lib/db/serializers";
 import { CreateMilestoneRequest } from "@/lib/types";
+import { canManageEvent } from "@/lib/permissions";
 import { NextRequest } from "next/server";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { error } = await requireSession();
+  const { error } = await requireUser();
   if (error) return error;
 
   const eventExists = await prisma.liveEvent.findUnique({ where: { id: params.id }, select: { id: true } });
@@ -27,8 +28,12 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { error } = await requireSession();
+  const { userId, role, error } = await requireUser();
   if (error) return error;
+
+  if (!canManageEvent({ id: userId!, role: role! })) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const eventExists = await prisma.liveEvent.findUnique({ where: { id: params.id }, select: { id: true } });
   if (!eventExists) return Response.json({ error: "Not Found" }, { status: 404 });
