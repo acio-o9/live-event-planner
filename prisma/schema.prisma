@@ -22,7 +22,6 @@ model User {
   eventBandMemberships EventBandMember[]
   assignedTasks        Task[]            @relation("AssignedTasks")
   paidExpenses         Expense[]
-  createdSchedules     BandSchedule[]
   instruments          UserInstrument[]
 }
 
@@ -76,7 +75,6 @@ model EventBand {
   snapshots       MemberSnapshot[]
   setlist         Setlist?
   tasks           Task[]
-  schedules       BandSchedule[]
 }
 
 model EventBandMember {
@@ -89,20 +87,6 @@ model EventBandMember {
   user      User      @relation(fields: [userId], references: [id], onUpdate: Cascade)
 
   @@id([eventBandId, userId])
-}
-
-model BandSchedule {
-  id          String   @id @default(uuid())
-  eventBandId String
-  location    String
-  startAt     DateTime
-  endAt       DateTime
-  createdBy   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  eventBand EventBand @relation(fields: [eventBandId], references: [id], onDelete: Cascade)
-  creator   User      @relation(fields: [createdBy], references: [id], onUpdate: Cascade)
 }
 
 model MemberSnapshot {

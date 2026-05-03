@@ -270,28 +270,6 @@ export interface UpdateExpenseRequest {
   description?: string;
 }
 
-// --- BandSchedule ---
-
-export interface BandSchedule {
-  id: string;
-  eventBandId: string;
-  bandName: string;
-  location: string;
-  startAt: string;  // ISO8601
-  endAt: string;    // ISO8601
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateBandScheduleRequest {
-  eventBandId: string;
-  location: string;
-  startAt: string;
-  endAt: string;
-}
-
-
 // --- API Error ---
 
 export interface ApiError {
