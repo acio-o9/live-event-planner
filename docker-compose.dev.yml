@@ -9,7 +9,6 @@ services:
       - .:/app
       # node_modules はコンテナ内のもの（Linux バイナリ）を優先
       - /app/node_modules
-      - /app/.next
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/live_event_planner
       - AUTH_SECRET=dev-secret-key-change-in-production
