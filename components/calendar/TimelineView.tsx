@@ -98,7 +98,7 @@ function assignSublanes(evts: TLEvent[]): Map<string, { lane: number; totalLanes
   }
   const total = laneEnds.length || 1;
   const result = new Map<string, { lane: number; totalLanes: number }>();
-  for (const [id, lane] of laneOf.entries()) result.set(id, { lane, totalLanes: total });
+  Array.from(laneOf.entries()).forEach(([id, lane]) => result.set(id, { lane, totalLanes: total }));
   return result;
 }
 
