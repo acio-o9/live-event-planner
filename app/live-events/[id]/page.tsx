@@ -6,6 +6,7 @@ import { AuthGuard } from "@/components/auth/AuthGuard";
 import { MilestoneList } from "@/components/live-events/MilestoneList";
 import { LiveEventDetailTabs } from "@/components/live-events/LiveEventDetailTabs";
 import { ExpenseTab } from "@/components/live-events/ExpenseTab";
+import { TimelineView } from "@/components/timeline/TimelineView";
 import { EventBandFormModal } from "@/components/live-events/EventBandFormModal";
 import { BandMembersModal } from "@/components/live-events/BandMembersModal";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
@@ -206,6 +207,10 @@ function LiveEventDetailPage() {
       )}
 
       {tab === "expenses" && <ExpenseTab liveEventId={id} />}
+
+      {tab === "timeline" && (
+        <TimelineView liveEventId={id} canEdit={canManageEvent} />
+      )}
 
       {showAddBand && (
         <EventBandFormModal

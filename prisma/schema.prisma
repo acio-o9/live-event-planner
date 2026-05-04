@@ -54,10 +54,11 @@ model LiveEvent {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  creator    User         @relation(fields: [createdBy], references: [id], onUpdate: Cascade)
-  bands      EventBand[]
-  milestones Milestone[]
-  expenses   Expense[]
+  creator        User            @relation(fields: [createdBy], references: [id], onUpdate: Cascade)
+  bands          EventBand[]
+  milestones     Milestone[]
+  expenses       Expense[]
+  timelineEvents TimelineEvent[]
 }
 
 model EventBand {
@@ -69,12 +70,13 @@ model EventBand {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  liveEvent       LiveEvent         @relation(fields: [liveEventId], references: [id], onDelete: Cascade)
-  creator         User              @relation(fields: [createdBy], references: [id], onUpdate: Cascade)
-  members         EventBandMember[]
-  snapshots       MemberSnapshot[]
-  setlist         Setlist?
-  tasks           Task[]
+  liveEvent      LiveEvent         @relation(fields: [liveEventId], references: [id], onDelete: Cascade)
+  creator        User              @relation(fields: [createdBy], references: [id], onUpdate: Cascade)
+  members        EventBandMember[]
+  snapshots      MemberSnapshot[]
+  setlist        Setlist?
+  tasks          Task[]
+  timelineEvents TimelineEvent[]
 }
 
 model EventBandMember {
@@ -161,4 +163,19 @@ model Expense {
 
   liveEvent  LiveEvent @relation(fields: [liveEventId], references: [id], onDelete: Cascade)
   paidByUser User      @relation(fields: [paidBy], references: [id], onUpdate: Cascade)
+}
+
+model TimelineEvent {
+  id          String   @id @default(uuid())
+  liveEventId String
+  eventBandId String?
+  type        String   // "rehearsal" | "performance" | "other"
+  startMin    Int
+  durationMin Int
+  note        String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  liveEvent LiveEvent  @relation(fields: [liveEventId], references: [id], onDelete: Cascade)
+  eventBand EventBand? @relation(fields: [eventBandId], references: [id], onDelete: SetNull)
 }

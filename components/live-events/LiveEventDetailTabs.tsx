@@ -9,6 +9,7 @@ const TABS: { id: LiveEventDetailTab; label: string }[] = [
   { id: "bands", label: "バンド一覧" },
   { id: "milestones", label: "マイルストーン" },
   { id: "expenses", label: "費用管理" },
+  { id: "timeline", label: "タイムライン" },
 ];
 
 export function LiveEventDetailTabs({ activeTab, onTabChange }: LiveEventDetailTabsProps) {

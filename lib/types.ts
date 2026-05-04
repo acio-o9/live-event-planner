@@ -31,7 +31,7 @@ export interface ProfileUpdateFormData {
 // Live Event
 // ============================================================
 
-export type LiveEventDetailTab = "bands" | "milestones" | "expenses";
+export type LiveEventDetailTab = "bands" | "milestones" | "expenses" | "timeline";
 
 export interface LiveEvent {
   id: string;
@@ -269,6 +269,30 @@ export interface UpdateExpenseRequest {
   category?: string;
   description?: string;
 }
+
+// --- Timeline ---
+
+export type TLEventType = "rehearsal" | "performance" | "other";
+
+export interface TimelineEvent {
+  id: string;
+  liveEventId: string;
+  eventBandId: string | null; // null = スタッフ共通
+  type: TLEventType;
+  startMin: number;           // タイムライン開始時刻(10:00)からの経過分
+  durationMin: number;
+  note: string;
+}
+
+export interface CreateTimelineEventRequest {
+  eventBandId: string | null;
+  type: TLEventType;
+  startMin: number;
+  durationMin: number;
+  note: string;
+}
+
+export type UpdateTimelineEventRequest = Partial<CreateTimelineEventRequest>;
 
 // --- API Error ---
 
