@@ -108,9 +108,6 @@ export function useTimelineEvents(liveEventId: string) {
 
 ### 5. Component Layer
 
-**`app/live-events/[id]/timeline/page.tsx`** (新規):
-- `liveEventId` を TimelineView に渡すサーバーコンポーネント
-
 **`components/timeline/TimelineView.tsx`** (既存から更新):
 - `liveEventId` prop を受け取り、`useTimelineEvents` でデータ取得
 - バンド列は EventBand 一覧から動的生成（ハードコードの b1〜b8 を廃止）
@@ -119,7 +116,10 @@ export function useTimelineEvents(liveEventId: string) {
 **`components/timeline/TimelineEventModal.tsx`** (分離):
 - バンド列・スタッフ列で分岐するモーダルを独立コンポーネントとして切り出し
 
-ライブイベント詳細ページのタブに「タイムライン」を追加。
+**`app/live-events/[id]/page.tsx`** (更新):
+- `LiveEventDetailTab` 型に `"timeline"` を追加
+- `TABS` 配列に `{ id: "timeline", label: "タイムライン" }` を追加
+- タブコンテンツ切り替えに `{tab === "timeline" && <TimelineView liveEventId={id} />}` を追加
 
 ---
 

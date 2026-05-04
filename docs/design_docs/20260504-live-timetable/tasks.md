@@ -37,8 +37,7 @@
 - [ ] `components/timeline/TimelineView.tsx` — `liveEventId` prop 対応、`useTimelineEvents` に切り替え
 - [ ] バンド列をハードコードの b1〜b8 から EventBand 動的生成に変更
 - [ ] 叩きのタイムライン生成を `bulkReplace` API 経由に変更
-- [ ] `app/live-events/[id]/timeline/page.tsx` — サーバーコンポーネントとして新規作成
-- [ ] ライブイベント詳細ページのタブに「タイムライン」を追加
+- [ ] `app/live-events/[id]/page.tsx` — `LiveEventDetailTab` 型・`TABS` 配列・コンテンツ切り替えに `timeline` を追加
 - [ ] レスポンシブ対応（768px〜、スマホ横スクロール）
 
 ### Phase 6: Permission Control
