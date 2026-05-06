@@ -9,11 +9,11 @@ import { ExpenseTab } from "@/components/live-events/ExpenseTab";
 import { TimelineView } from "@/components/timeline/TimelineView";
 import { EventBandFormModal } from "@/components/live-events/EventBandFormModal";
 import { BandMembersModal } from "@/components/live-events/BandMembersModal";
+import { BandList } from "@/components/live-events/BandList";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { liveEventsApi } from "@/lib/api/live-events";
 import { useAuth } from "@/hooks/useAuth";
 import { LiveEvent, EventBand, LiveEventDetailTab, CreateMilestoneRequest, UpdateMilestoneRequest } from "@/lib/types";
-import Link from "next/link";
 
 function LiveEventDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -142,53 +142,17 @@ function LiveEventDetailPage() {
               </button>
             )}
           </div>
-          {event.bands.length === 0 ? (
-            <p className="text-gray-400 text-sm">まだ参加バンドがいません</p>
-          ) : (
-            <ul className="space-y-2">
-              {event.bands.map((b) => (
-                <li key={b.id} className="flex items-center gap-2 bg-white border border-gray-200 rounded px-3 py-2">
-                  <Link
-                    href={`/live-events/${id}/setlist?band=${b.id}`}
-                    className="text-sm font-medium text-gray-800 hover:text-blue-600 flex-1"
-                  >
-                    {b.name}
-                    {b.snapshotTakenAt && (
-                      <span className="ml-1 text-xs text-green-500">✓</span>
-                    )}
-                  </Link>
-                  {b.description && (
-                    <span className="text-xs text-gray-400 flex-1">{b.description}</span>
-                  )}
-                  <span className="text-xs text-gray-400">{b.members.length}人</span>
-                  {canManageEvent && (
-                    <button
-                      onClick={() => setManagingMembersBand(b)}
-                      className="text-xs text-gray-400 hover:text-blue-600 px-1"
-                    >
-                      メンバー
-                    </button>
-                  )}
-                  {canManageEvent && (
-                    <button
-                      onClick={() => setEditingBand({ id: b.id, name: b.name, description: b.description })}
-                      className="text-xs text-gray-400 hover:text-blue-600 px-1"
-                    >
-                      編集
-                    </button>
-                  )}
-                  {canManageEvent && (
-                    <button
-                      onClick={() => handleBandDelete(b.id)}
-                      className="text-xs text-gray-400 hover:text-red-600 px-1"
-                    >
-                      削除
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
+          <BandList
+            liveEventId={id}
+            initialBands={event.bands}
+            canReorder={canManageEvent}
+            onBandsChange={(bands) =>
+              setEvent((prev) => prev ? { ...prev, bands } : prev)
+            }
+            onManageMembers={setManagingMembersBand}
+            onEdit={setEditingBand}
+            onDelete={handleBandDelete}
+          />
         </section>
       )}
 

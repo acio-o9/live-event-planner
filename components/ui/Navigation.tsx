@@ -7,7 +7,6 @@ const links = [
   { href: "/", label: "ダッシュボード" },
   { href: "/live-events", label: "ライブ" },
   { href: "/members", label: "メンバー" },
-  { href: "/calendar", label: "カレンダー" },
 ];
 
 export function Navigation() {
