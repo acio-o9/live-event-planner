@@ -10,6 +10,7 @@ import {
   CreateEventBandRequest,
   AddEventBandMemberRequest,
   UpdateBandLeaderRequest,
+  ReorderBandsRequest,
 } from "@/lib/types";
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
@@ -105,4 +106,10 @@ export const liveEventsApi = {
       `/api/live-events/${id}/bands/${eventBandId}/snapshot`,
       { method: "POST" }
     ),
+
+  reorderBands: (id: string, data: ReorderBandsRequest) =>
+    fetchJson<EventBand[]>(`/api/live-events/${id}/bands/reorder`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
 };

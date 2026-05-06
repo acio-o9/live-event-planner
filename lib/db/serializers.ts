@@ -111,6 +111,7 @@ type PrismaEventBand = {
   liveEventId: string;
   name: string;
   description: string | null;
+  order: number;
   members: PrismaEventBandMember[];
   snapshots: PrismaMemberSnapshot[];
   setlist: PrismaSetlist | null;
@@ -226,6 +227,7 @@ export function serializeEventBand(b: PrismaEventBand): EventBand {
     liveEventId: b.liveEventId,
     name: b.name,
     description: b.description ?? undefined,
+    order: b.order,
     members: b.members.map(serializeEventBandMember),
     memberSnapshot: b.snapshots.map(serializeMemberSnapshot),
     setlist: serializeSetlist(b.setlist!),
@@ -271,7 +273,7 @@ export function serializeLiveEvent(e: PrismaLiveEvent): LiveEvent {
     createdBy: e.createdBy,
     createdAt: e.createdAt.toISOString(),
     updatedAt: e.updatedAt.toISOString(),
-    bands: e.bands.map(serializeEventBand),
+    bands: e.bands.sort((a, b) => a.order - b.order).map(serializeEventBand),
     milestones: e.milestones
       .sort((a, b) => a.order - b.order)
       .map((m) => ({

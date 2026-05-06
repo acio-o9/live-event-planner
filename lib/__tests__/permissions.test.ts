@@ -7,6 +7,7 @@ import {
   canChangeUserRole,
   canRegisterExpense,
   canEditExpense,
+  canReorderBands,
 } from "@/lib/permissions";
 import type { PermissionUser } from "@/lib/permissions";
 
@@ -83,6 +84,12 @@ describe("canRegisterExpense", () => {
   it("honki_kanrinin は true", () => expect(canRegisterExpense(kanrinin, memberIds)).toBe(true));
   it("バンドメンバーは true", () => expect(canRegisterExpense(member, memberIds)).toBe(true));
   it("バンド外の user は false", () => expect(canRegisterExpense(nonMember, memberIds)).toBe(false));
+});
+
+describe("canReorderBands", () => {
+  it("admin は true", () => expect(canReorderBands(admin)).toBe(true));
+  it("honki_kanrinin は true", () => expect(canReorderBands(kanrinin)).toBe(true));
+  it("user は false", () => expect(canReorderBands(user)).toBe(false));
 });
 
 describe("canEditExpense", () => {

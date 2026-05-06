@@ -54,6 +54,7 @@ export interface EventBand {
   liveEventId: string;
   name: string;
   description?: string;
+  order: number;
   members: EventBandMember[];
   memberSnapshot: MemberSnapshot[]; // 参加確定時点のメンバースナップショット
   setlist: Setlist;
@@ -157,6 +158,10 @@ export interface CreateEventBandRequest {
 export interface UpdateEventBandRequest {
   name?: string;
   description?: string;
+}
+
+export interface ReorderBandsRequest {
+  orderedIds: string[];
 }
 
 export interface AddEventBandMemberRequest {

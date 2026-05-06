@@ -35,3 +35,7 @@ export function canRegisterExpense(user: PermissionUser, bandMemberUserIds: stri
 export function canEditExpense(user: PermissionUser, paidByUserId: string): boolean {
   return canManageEvent(user) || user.id === paidByUserId;
 }
+
+export function canReorderBands(user: PermissionUser): boolean {
+  return canManageEvent(user);
+}
