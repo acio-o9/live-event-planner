@@ -24,7 +24,7 @@ export async function GET(
     prisma.eventBand.findMany({
       where: { liveEventId: params.id },
       select: { id: true, name: true },
-      orderBy: { createdAt: "asc" },
+      orderBy: [{ order: "asc" }, { createdAt: "asc" }],
     }),
   ]);
 
