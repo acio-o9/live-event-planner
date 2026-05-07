@@ -38,7 +38,7 @@ export function LiveEventCard({ event }: { event: LiveEvent }) {
         <p className="text-sm text-gray-500">📍 {event.venue}</p>
       )}
       <p className="text-xs text-gray-400 mt-2">
-        参加バンド {event.bands.length}組
+        出演バンド {event.bands.length}組
       </p>
     </Link>
   );

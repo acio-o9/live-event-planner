@@ -141,7 +141,10 @@ function LiveEventDetailPage() {
       {tab === "bands" && (
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold text-gray-700">参加バンド</h2>
+            <h2 className="text-lg font-semibold text-gray-700">
+              出演バンド
+              <span className="ml-2 text-xs font-normal text-gray-400">出演順</span>
+            </h2>
             {canManageEvent && (
               <button
                 onClick={() => setShowAddBand(true)}

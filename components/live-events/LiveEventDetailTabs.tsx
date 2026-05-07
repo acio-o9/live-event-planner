@@ -7,7 +7,7 @@ interface LiveEventDetailTabsProps {
 
 const TABS: { id: LiveEventDetailTab; label: string }[] = [
   { id: "notice", label: "連絡事項" },
-  { id: "bands", label: "バンド一覧" },
+  { id: "bands", label: "バンド" },
   { id: "milestones", label: "スケジュール" },
   { id: "expenses", label: "費用管理" },
   { id: "timeline", label: "タイムテーブル" },
