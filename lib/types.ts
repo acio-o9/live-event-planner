@@ -31,7 +31,7 @@ export interface ProfileUpdateFormData {
 // Live Event
 // ============================================================
 
-export type LiveEventDetailTab = "bands" | "milestones" | "expenses" | "timeline";
+export type LiveEventDetailTab = "notice" | "bands" | "milestones" | "expenses" | "timeline";
 
 export interface LiveEvent {
   id: string;
@@ -40,6 +40,7 @@ export interface LiveEvent {
   date?: string; // 開催予定日（未定の場合はundefined）
   venue?: string;
   photoAlbumUrl?: string; // Google フォトアルバムURL
+  noticeContent?: string;
   bands: EventBand[];
   milestones: Milestone[];
   status: "planning" | "confirmed" | "completed" | "cancelled";
@@ -195,6 +196,10 @@ export interface UpdateLiveEventRequest {
   venue?: string;
   photoAlbumUrl?: string;
   status?: LiveEvent["status"];
+}
+
+export interface UpdateNoticeRequest {
+  content: string;
 }
 
 export interface CreateMilestoneRequest {

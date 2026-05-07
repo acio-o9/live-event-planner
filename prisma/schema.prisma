@@ -49,6 +49,7 @@ model LiveEvent {
   date          DateTime?
   venue         String?
   photoAlbumUrl String?
+  noticeContent String?
   status        String    @default("planning")
   createdBy     String
   createdAt     DateTime  @default(now())

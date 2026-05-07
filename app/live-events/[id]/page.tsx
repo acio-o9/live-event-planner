@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { MilestoneList } from "@/components/live-events/MilestoneList";
 import { LiveEventDetailTabs } from "@/components/live-events/LiveEventDetailTabs";
+import { NoticeTab } from "@/components/live-events/NoticeTab";
 import { ExpenseTab } from "@/components/live-events/ExpenseTab";
 import { TimelineView } from "@/components/timeline/TimelineView";
 import { EventBandFormModal } from "@/components/live-events/EventBandFormModal";
@@ -19,7 +20,7 @@ function LiveEventDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tab = (searchParams.get("tab") ?? "bands") as LiveEventDetailTab;
+  const tab = (searchParams.get("tab") ?? "notice") as LiveEventDetailTab;
 
   const [event, setEvent] = useState<LiveEvent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -128,6 +129,14 @@ function LiveEventDetailPage() {
       </div>
 
       <LiveEventDetailTabs activeTab={tab} onTabChange={handleTabChange} />
+
+      {tab === "notice" && (
+        <NoticeTab
+          liveEventId={id}
+          initialContent={event.noticeContent}
+          canEdit={canManageEvent}
+        />
+      )}
 
       {tab === "bands" && (
         <section>

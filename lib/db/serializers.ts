@@ -124,6 +124,7 @@ type PrismaLiveEvent = {
   date: Date | null;
   venue: string | null;
   photoAlbumUrl: string | null;
+  noticeContent: string | null;
   status: string;
   createdBy: string;
   createdAt: Date;
@@ -269,6 +270,7 @@ export function serializeLiveEvent(e: PrismaLiveEvent): LiveEvent {
     date: e.date?.toISOString() ?? undefined,
     venue: e.venue ?? undefined,
     photoAlbumUrl: e.photoAlbumUrl ?? undefined,
+    noticeContent: e.noticeContent ?? undefined,
     status: e.status as LiveEvent["status"],
     createdBy: e.createdBy,
     createdAt: e.createdAt.toISOString(),
