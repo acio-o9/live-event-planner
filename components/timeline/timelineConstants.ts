@@ -5,7 +5,6 @@ export const HOUR_H = 60 * PX_PER_MIN;
 export const TOTAL_H = (H_END - H_START) * HOUR_H;
 export const TIME_COL_W = 56;
 export const BAND_COL_W = 160;
-export const STAFF_COL_W = 180;
 export const HEADER_H = 44;
 export const SNAP_MIN = 10;
 export const DRAG_THRESHOLD_PX = 5;
