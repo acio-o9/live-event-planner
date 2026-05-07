@@ -5,6 +5,7 @@ import {
   User,
   CreateLiveEventRequest,
   UpdateLiveEventRequest,
+  UpdateNoticeRequest,
   CreateMilestoneRequest,
   UpdateMilestoneRequest,
   CreateEventBandRequest,
@@ -39,6 +40,12 @@ export const liveEventsApi = {
 
   update: (id: string, data: UpdateLiveEventRequest) =>
     fetchJson<LiveEvent>(`/api/live-events/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  updateNotice: (id: string, data: UpdateNoticeRequest) =>
+    fetchJson<{ content: string }>(`/api/live-events/${id}/notice`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
