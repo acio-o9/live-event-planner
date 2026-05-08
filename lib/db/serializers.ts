@@ -5,6 +5,7 @@ import type {
   EventBand,
   EventBandMember,
   LiveEvent,
+  LiveEventNotice,
   MemberSnapshot,
   Milestone,
   Task,
@@ -30,6 +31,7 @@ export const eventBandInclude = {
 export const liveEventInclude = {
   bands: { include: eventBandInclude },
   milestones: { include: { tasks: true } },
+  notice: true,
 } as const;
 
 // ---------------------------------------------------------------------------
@@ -117,6 +119,13 @@ type PrismaEventBand = {
   setlist: PrismaSetlist | null;
 };
 
+type PrismaLiveEventNotice = {
+  liveEventId: string;
+  content: string | null;
+  updatedAt: Date;
+  updatedBy: string | null;
+};
+
 type PrismaLiveEvent = {
   id: string;
   title: string;
@@ -124,13 +133,13 @@ type PrismaLiveEvent = {
   date: Date | null;
   venue: string | null;
   photoAlbumUrl: string | null;
-  noticeContent: string | null;
   status: string;
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;
   bands: PrismaEventBand[];
   milestones: PrismaMilestone[];
+  notice: PrismaLiveEventNotice | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -262,6 +271,15 @@ export function serializeExpense(e: PrismaExpense): Expense {
   };
 }
 
+export function serializeLiveEventNotice(n: PrismaLiveEventNotice): LiveEventNotice {
+  return {
+    liveEventId: n.liveEventId,
+    content: n.content,
+    updatedAt: n.updatedAt.toISOString(),
+    updatedBy: n.updatedBy,
+  };
+}
+
 export function serializeLiveEvent(e: PrismaLiveEvent): LiveEvent {
   return {
     id: e.id,
@@ -270,7 +288,7 @@ export function serializeLiveEvent(e: PrismaLiveEvent): LiveEvent {
     date: e.date?.toISOString() ?? undefined,
     venue: e.venue ?? undefined,
     photoAlbumUrl: e.photoAlbumUrl ?? undefined,
-    noticeContent: e.noticeContent ?? undefined,
+    notice: e.notice ? serializeLiveEventNotice(e.notice) : null,
     status: e.status as LiveEvent["status"],
     createdBy: e.createdBy,
     createdAt: e.createdAt.toISOString(),

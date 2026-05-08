@@ -22,10 +22,11 @@ export async function PUT(
   if (!exists) return Response.json({ error: "Not Found" }, { status: 404 });
 
   const body: UpdateNoticeRequest = await request.json();
-  await prisma.liveEvent.update({
-    where: { id: params.id },
-    data: { noticeContent: body.content },
+  const notice = await prisma.liveEventNotice.upsert({
+    where: { liveEventId: params.id },
+    update: { content: body.content, updatedBy: userId! },
+    create: { liveEventId: params.id, content: body.content, updatedBy: userId! },
   });
 
-  return Response.json({ content: body.content });
+  return Response.json({ content: notice.content, updatedAt: notice.updatedAt.toISOString() });
 }

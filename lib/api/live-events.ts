@@ -45,7 +45,7 @@ export const liveEventsApi = {
     }),
 
   updateNotice: (id: string, data: UpdateNoticeRequest) =>
-    fetchJson<{ content: string }>(`/api/live-events/${id}/notice`, {
+    fetchJson<{ content: string | null; updatedAt: string }>(`/api/live-events/${id}/notice`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),

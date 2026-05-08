@@ -23,6 +23,7 @@ model User {
   assignedTasks        Task[]            @relation("AssignedTasks")
   paidExpenses         Expense[]
   instruments          UserInstrument[]
+  liveEventNotices     LiveEventNotice[]
 }
 
 model Instrument {
@@ -49,17 +50,27 @@ model LiveEvent {
   date          DateTime?
   venue         String?
   photoAlbumUrl String?
-  noticeContent String?
   status        String    @default("planning")
   createdBy     String
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  creator        User            @relation(fields: [createdBy], references: [id], onUpdate: Cascade)
+  creator        User             @relation(fields: [createdBy], references: [id], onUpdate: Cascade)
   bands          EventBand[]
   milestones     Milestone[]
   expenses       Expense[]
   timelineEvents TimelineEvent[]
+  notice         LiveEventNotice?
+}
+
+model LiveEventNotice {
+  liveEventId String   @id
+  content     String?
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?
+
+  liveEvent LiveEvent @relation(fields: [liveEventId], references: [id], onDelete: Cascade)
+  updater   User?     @relation(fields: [updatedBy], references: [id], onUpdate: Cascade)
 }
 
 model EventBand {

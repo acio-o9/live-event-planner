@@ -133,7 +133,7 @@ function LiveEventDetailPage() {
       {tab === "notice" && (
         <NoticeTab
           liveEventId={id}
-          initialContent={event.noticeContent}
+          initialNotice={event.notice}
           canEdit={canManageEvent}
         />
       )}

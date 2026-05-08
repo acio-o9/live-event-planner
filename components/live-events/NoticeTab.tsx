@@ -3,17 +3,20 @@
 import { useState } from "react";
 import MarkdownIt from "markdown-it";
 import { liveEventsApi } from "@/lib/api/live-events";
+import { LiveEventNotice } from "@/lib/types";
+import { formatDateTime } from "@/lib/utils/date";
 
 const md = new MarkdownIt({ html: false, linkify: true, typographer: true });
 
 interface NoticeTabProps {
   liveEventId: string;
-  initialContent: string | undefined;
+  initialNotice: LiveEventNotice | null | undefined;
   canEdit: boolean;
 }
 
-export function NoticeTab({ liveEventId, initialContent, canEdit }: NoticeTabProps) {
-  const [content, setContent] = useState(initialContent ?? "");
+export function NoticeTab({ liveEventId, initialNotice, canEdit }: NoticeTabProps) {
+  const [notice, setNotice] = useState<LiveEventNotice | null | undefined>(initialNotice);
+  const [content, setContent] = useState(initialNotice?.content ?? "");
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -35,8 +38,14 @@ export function NoticeTab({ liveEventId, initialContent, canEdit }: NoticeTabPro
     setIsSaving(true);
     setSaveError(null);
     try {
-      await liveEventsApi.updateNotice(liveEventId, { content: draft });
+      const result = await liveEventsApi.updateNotice(liveEventId, { content: draft });
       setContent(draft);
+      setNotice({
+        liveEventId,
+        content: result.content,
+        updatedAt: result.updatedAt,
+        updatedBy: notice?.updatedBy ?? null,
+      });
       setIsEditing(false);
     } catch (e) {
       console.error(e);
@@ -91,10 +100,17 @@ export function NoticeTab({ liveEventId, initialContent, canEdit }: NoticeTabPro
   }
 
   return (
-    <div
-      onClick={handleClick}
-      className={`prose prose-sm max-w-none ${canEdit ? "cursor-pointer hover:ring-2 hover:ring-blue-200 rounded-md p-3 transition-all" : "p-3"}`}
-      dangerouslySetInnerHTML={{ __html: md.render(content) }}
-    />
+    <div className="space-y-2">
+      {notice?.updatedAt && (
+        <p className="text-xs text-gray-400">
+          最終更新: {formatDateTime(notice.updatedAt)}
+        </p>
+      )}
+      <div
+        onClick={handleClick}
+        className={`prose prose-sm max-w-none ${canEdit ? "cursor-pointer hover:ring-2 hover:ring-blue-200 rounded-md p-3 transition-all" : "p-3"}`}
+        dangerouslySetInnerHTML={{ __html: md.render(content) }}
+      />
+    </div>
   );
 }
