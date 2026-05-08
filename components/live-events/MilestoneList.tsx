@@ -26,8 +26,11 @@ const STATUS_COLOR: Record<Milestone["status"], string> = {
   completed: "bg-green-100 text-green-800",
 };
 
-function sortByDueDate(milestones: Milestone[]): Milestone[] {
+function sortMilestones(milestones: Milestone[]): Milestone[] {
   return [...milestones].sort((a, b) => {
+    const aCompleted = a.status === "completed" ? 1 : 0;
+    const bCompleted = b.status === "completed" ? 1 : 0;
+    if (aCompleted !== bCompleted) return aCompleted - bCompleted;
     if (!a.dueDate && !b.dueDate) return 0;
     if (!a.dueDate) return 1;
     if (!b.dueDate) return -1;
@@ -123,7 +126,7 @@ export function MilestoneList({
     }
   };
 
-  const sorted = sortByDueDate(milestones);
+  const sorted = sortMilestones(milestones);
 
   return (
     <div className="space-y-4">
