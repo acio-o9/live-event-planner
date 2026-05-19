@@ -35,6 +35,7 @@ export function ExpenseSummary({ summary }: Props) {
             <thead>
               <tr className="border-b text-gray-500 text-left">
                 <th className="py-2 pr-4">名前</th>
+                <th className="py-2 pr-4 text-right">バンド数</th>
                 <th className="py-2 pr-4 text-right">立替金額</th>
                 <th className="py-2 text-right">精算差額</th>
               </tr>
@@ -43,6 +44,9 @@ export function ExpenseSummary({ summary }: Props) {
               {summary.breakdown.map((b) => (
                 <tr key={b.userId} className="border-b">
                   <td className="py-2 pr-4">{b.nickname}</td>
+                  <td className="py-2 pr-4 text-right text-gray-600">
+                    {b.bandCount ?? 0}
+                  </td>
                   <td className="py-2 pr-4 text-right">¥{b.paidAmount.toLocaleString()}</td>
                   <td
                     className={`py-2 text-right font-medium ${

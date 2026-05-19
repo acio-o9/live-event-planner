@@ -268,6 +268,7 @@ export interface ExpenseSummary {
   breakdown: {
     userId: string;
     nickname: string;
+    bandCount?: number;
     paidAmount: number;
     balance: number; // 正: 受け取り、負: 支払い
   }[];

@@ -26,14 +26,17 @@ export async function GET(
 
   // 参加者一覧: スナップショットがあればそちらを優先、なければバンドメンバーを使用（重複除去）
   const participantMap = new Map<string, string>();
+  const bandCountMap = new Map<string, number>();
   for (const band of event.bands) {
     if (band.snapshots.length > 0) {
       for (const snap of band.snapshots) {
         participantMap.set(snap.userId, snap.nickname);
+        bandCountMap.set(snap.userId, (bandCountMap.get(snap.userId) ?? 0) + 1);
       }
     } else {
       for (const member of band.members) {
         participantMap.set(member.userId, member.user.nickname);
+        bandCountMap.set(member.userId, (bandCountMap.get(member.userId) ?? 0) + 1);
       }
     }
   }
@@ -41,6 +44,7 @@ export async function GET(
   const participants = Array.from(participantMap.entries()).map(([userId, nickname]) => ({
     userId,
     nickname,
+    bandCount: bandCountMap.get(userId) ?? 0,
   }));
 
   const expenses = event.expenses.map((e) => ({
